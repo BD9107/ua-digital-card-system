@@ -1,0 +1,357 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
+
+export default function EditEmployee({ params }) {
+  const { id } = params
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState(null)
+  const [employee, setEmployee] = useState(null)
+  const [formData, setFormData] = useState(null)
+  const [qrCode, setQrCode] = useState(null)
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/admin/login')
+        return
+      }
+      fetchEmployee()
+    }
+    checkAuth()
+  }, [id])
+
+  const fetchEmployee = async () => {
+    try {
+      const response = await fetch(`/api/employees/${id}`)
+      if (!response.ok) throw new Error('Failed to fetch employee')
+      
+      const data = await response.json()
+      setEmployee(data)
+      setFormData(data)
+      
+      // Fetch QR code
+      const qrResponse = await fetch(`/api/qrcode?id=${id}`)
+      const qrData = await qrResponse.json()
+      setQrCode(qrData.qrCode)
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/employees/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update employee')
+      }
+
+      alert('Employee updated successfully!')
+      router.push('/admin/dashboard')
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('employeeId', id)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Upload failed')
+      }
+
+      const result = await response.json()
+      setFormData(prev => ({ ...prev, photo_url: result.url }))
+      alert('Photo uploaded successfully!')
+    } catch (error) {
+      alert(`Upload failed: ${error.message}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="p-8 text-center">Loading...</div>
+  }
+
+  if (error && !employee) {
+    return (
+      <div className="p-8 text-center">
+        <div className="text-red-600 mb-4">{error}</div>
+        <Link href="/admin/dashboard" className="text-blue-600 hover:underline">
+          Back to Dashboard
+        </Link>
+      </div>
+    )
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const profileUrl = `${baseUrl}/staff/${id}`
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-[#003366] text-white">
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold">Edit Employee</h1>
+          <p className="text-gray-300 mt-1">{formData?.first_name} {formData?.last_name}</p>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Main Form */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow p-8">
+              {error && (
+                <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-2">
+                      First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="first_name"
+                      value={formData?.first_name || ''}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-2">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="last_name"
+                      value={formData?.last_name || ''}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData?.email || ''}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-2">
+                      Phone
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData?.phone || ''}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-2">
+                      WhatsApp
+                    </label>
+                    <input
+                      type="tel"
+                      name="whatsapp"
+                      value={formData?.whatsapp || ''}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-2">
+                      Job Title
+                    </label>
+                    <input
+                      type="text"
+                      name="job_title"
+                      value={formData?.job_title || ''}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-700 font-medium mb-2">
+                      Department
+                    </label>
+                    <input
+                      type="text"
+                      name="department"
+                      value={formData?.department || ''}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Website / Custom Link
+                  </label>
+                  <input
+                    type="url"
+                    name="website"
+                    value={formData?.website || ''}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                  />
+                </div>
+
+                <div className="border-t pt-6">
+                  <label className="block text-gray-700 font-medium mb-3">
+                    Employee Photo
+                  </label>
+                  
+                  {formData?.photo_url && (
+                    <div className="mb-4">
+                      <img 
+                        src={formData.photo_url} 
+                        alt="Employee" 
+                        className="w-32 h-32 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+
+                  <label className="inline-block bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 cursor-pointer">
+                    {uploading ? 'Uploading...' : 'Choose Photo'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      disabled={uploading}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="flex-1 bg-[#003366] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#004488] disabled:bg-gray-400 transition-colors"
+                  >
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <Link
+                    href="/admin/dashboard"
+                    className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-center"
+                  >
+                    Cancel
+                  </Link>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* QR Code */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">QR Code</h3>
+              {qrCode && (
+                <div className="text-center">
+                  <img src={qrCode} alt="QR Code" className="w-full max-w-[200px] mx-auto" />
+                  <a
+                    href={qrCode}
+                    download={`qr-${formData?.first_name}-${formData?.last_name}.png`}
+                    className="inline-block mt-4 text-[#003366] hover:underline text-sm"
+                  >
+                    Download QR Code
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Public URL */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">Public Profile</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm text-gray-600">URL:</label>
+                  <div className="text-sm bg-gray-50 p-2 rounded break-all">
+                    {profileUrl}
+                  </div>
+                </div>
+                <a
+                  href={profileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full text-center bg-[#003366] text-white py-2 rounded-lg hover:bg-[#004488] transition-colors"
+                >
+                  View Profile
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
