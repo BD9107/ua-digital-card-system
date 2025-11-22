@@ -198,7 +198,7 @@ export async function POST(request) {
     if (segments[0] === 'auth') {
       const body = await request.json()
       const { action, email, password } = body
-      const supabase = createSupabaseServer()
+      const supabase = await createSupabaseServer()
       
       if (action === 'signin') {
         const { data, error } = await supabase.auth.signInWithPassword({
