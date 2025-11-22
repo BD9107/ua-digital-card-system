@@ -7,7 +7,40 @@ import Papa from 'papaparse'
 // Helper function for auth middleware
 async function authMiddleware(request) {
   try {
-    const supabase = await createSupabaseServer()
+    // Try to get token from Authorization header first
+    const authHeader = request.headers.get('authorization')
+    let supabase
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7)
+      // Create supabase client with the token
+      const { createClient } = await import('@supabase/supabase-js')
+      supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        }
+      )
+      
+      // Verify the token
+      const { data: { user }, error } = await supabase.auth.getUser(token)
+      
+      if (error || !user) {
+        console.error('Token verification failed:', error)
+        return { error: 'Unauthorized - Invalid token', status: 401 }
+      }
+      
+      console.log('Auth successful via token for user:', user.email)
+      return { supabase, user }
+    }
+    
+    // Fallback to cookie-based auth
+    supabase = await createSupabaseServer()
     
     // Get the session first
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
@@ -35,7 +68,7 @@ async function authMiddleware(request) {
       return { error: 'Unauthorized - No user', status: 401 }
     }
     
-    console.log('Auth successful for user:', user.email)
+    console.log('Auth successful via session for user:', user.email)
     return { supabase, user }
   } catch (error) {
     console.error('Auth middleware error:', error)
