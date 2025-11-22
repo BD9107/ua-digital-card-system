@@ -5,15 +5,42 @@ import { generateVCard } from '@/lib/vcard'
 import Papa from 'papaparse'
 
 // Helper function for auth middleware
-async function authMiddleware() {
-  const supabase = createSupabaseServer()
-  const { data: { user }, error } = await supabase.auth.getUser()
-  
-  if (error || !user) {
-    return { error: 'Unauthorized', status: 401 }
+async function authMiddleware(request) {
+  try {
+    const supabase = createSupabaseServer()
+    
+    // Get the session first
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    
+    if (sessionError) {
+      console.error('Session error:', sessionError)
+      return { error: 'Unauthorized - Session error', status: 401 }
+    }
+    
+    if (!session) {
+      console.error('No session found')
+      return { error: 'Unauthorized - No session', status: 401 }
+    }
+    
+    // Get the user
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    
+    if (userError) {
+      console.error('User error:', userError)
+      return { error: 'Unauthorized - User error', status: 401 }
+    }
+    
+    if (!user) {
+      console.error('No user found')
+      return { error: 'Unauthorized - No user', status: 401 }
+    }
+    
+    console.log('Auth successful for user:', user.email)
+    return { supabase, user }
+  } catch (error) {
+    console.error('Auth middleware error:', error)
+    return { error: 'Unauthorized - Exception', status: 401 }
   }
-  
-  return { supabase, user }
 }
 
 // Helper to generate slug from name
