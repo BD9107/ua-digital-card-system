@@ -177,7 +177,7 @@ export async function GET(request) {
     }
 
     // Protected routes - require authentication
-    const authResult = await authMiddleware()
+    const authResult = await authMiddleware(request)
     if (authResult.error) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
