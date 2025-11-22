@@ -81,7 +81,7 @@ export async function GET(request) {
 
     // Public employee profile (no auth required)
     if (segments[0] === 'public' && segments[1] === 'employees') {
-      const supabase = createSupabaseServer()
+      const supabase = await createSupabaseServer()
       const id = segments[2]
       
       const { data, error } = await supabase
