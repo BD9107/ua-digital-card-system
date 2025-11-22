@@ -260,7 +260,7 @@ export async function POST(request) {
     }
 
     // Protected routes
-    const authResult = await authMiddleware()
+    const authResult = await authMiddleware(request)
     if (authResult.error) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
