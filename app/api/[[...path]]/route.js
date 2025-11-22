@@ -119,7 +119,7 @@ export async function GET(request) {
     // vCard download
     if (segments[0] === 'vcard') {
       const employeeId = url.searchParams.get('id')
-      const supabase = createSupabaseServer()
+      const supabase = await createSupabaseServer()
       
       const { data, error } = await supabase
         .from('employees')
