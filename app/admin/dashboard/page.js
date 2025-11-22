@@ -42,7 +42,14 @@ export default function AdminDashboard() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/employees')
+      // Get session token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      const response = await fetch('/api/employees', {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
+      })
 
       if (!response.ok) {
         throw new Error('Failed to fetch employees')
