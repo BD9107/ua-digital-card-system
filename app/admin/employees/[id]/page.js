@@ -32,7 +32,14 @@ export default function EditEmployee({ params }) {
 
   const fetchEmployee = async () => {
     try {
-      const response = await fetch(`/api/employees/${id}`)
+      // Get session token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      const response = await fetch(`/api/employees/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
+      })
       if (!response.ok) throw new Error('Failed to fetch employee')
       
       const data = await response.json()
