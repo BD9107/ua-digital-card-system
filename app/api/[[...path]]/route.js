@@ -58,7 +58,7 @@ export async function GET(request) {
     // Auth routes
     if (segments[0] === 'auth') {
       const action = url.searchParams.get('action')
-      const supabase = createSupabaseServer()
+      const supabase = await createSupabaseServer()
       
       if (action === 'user') {
         const { data, error } = await supabase.auth.getUser()
