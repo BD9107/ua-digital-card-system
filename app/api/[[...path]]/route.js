@@ -447,7 +447,7 @@ export async function DELETE(request) {
   const segments = path.split('/').filter(Boolean)
 
   try {
-    const authResult = await authMiddleware()
+    const authResult = await authMiddleware(request)
     if (authResult.error) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
