@@ -7,7 +7,7 @@ import Papa from 'papaparse'
 // Helper function for auth middleware
 async function authMiddleware(request) {
   try {
-    const supabase = createSupabaseServer()
+    const supabase = await createSupabaseServer()
     
     // Get the session first
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
