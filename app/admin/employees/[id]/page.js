@@ -101,12 +101,18 @@ export default function EditEmployee({ params }) {
     setUploading(true)
 
     try {
+      // Get session token
+      const { data: { session } } = await supabase.auth.getSession()
+      
       const formData = new FormData()
       formData.append('file', file)
       formData.append('employeeId', id)
 
       const response = await fetch('/api/upload', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: formData
       })
 
