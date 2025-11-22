@@ -71,8 +71,13 @@ export default function AdminDashboard() {
     if (!confirm('Are you sure you want to delete this employee?')) return
 
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
       await fetch(`/api/employees/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
       })
       fetchEmployees()
     } catch (error) {
@@ -82,9 +87,14 @@ export default function AdminDashboard() {
 
   const handleToggleActive = async (employee) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
       await fetch(`/api/employees/${employee.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({ is_active: !employee.is_active })
       })
       fetchEmployees()
