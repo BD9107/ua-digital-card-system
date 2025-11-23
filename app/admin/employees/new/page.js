@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import ProfessionalLinksManager from '@/components/ProfessionalLinksManager'
 
 export default function NewEmployee() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [professionalLinks, setProfessionalLinks] = useState([])
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
