@@ -112,23 +112,38 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
-    // Public employee profile (no auth required)
+    // Public employee profile (no auth required, with active links)
     if (segments[0] === 'public' && segments[1] === 'employees') {
       const supabase = await createSupabaseServer()
       const id = segments[2]
       
-      const { data, error } = await supabase
+      const { data: employee, error } = await supabase
         .from('employees')
         .select('*')
         .eq('id', id)
         .eq('is_active', true)
         .single()
       
-      if (error || !data) {
+      if (error || !employee) {
         return NextResponse.json({ error: 'Employee not found' }, { status: 404 })
       }
       
-      return NextResponse.json(data)
+      // Fetch only active professional links
+      const { data: links, error: linksError } = await supabase
+        .from('employee_links')
+        .select('id, label, url, icon_type, sort_order')
+        .eq('employee_id', id)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+      
+      if (linksError) {
+        console.error('Error fetching public links:', linksError)
+      }
+      
+      return NextResponse.json({
+        ...employee,
+        professional_links: links || []
+      })
     }
 
     // QR Code generation
