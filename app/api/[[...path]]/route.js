@@ -429,33 +429,68 @@ export async function PUT(request) {
     }
     const { supabase } = authResult
 
-    // Update employee
+    // Update employee (with professional links)
     if (segments[0] === 'employees' && segments[1]) {
       const body = await request.json()
       const id = segments[1]
       
+      // Extract professional_links if provided
+      const { professional_links, ...employeeData } = body
+      
       // Update slug if name changed
-      if (body.first_name || body.last_name) {
+      if (employeeData.first_name || employeeData.last_name) {
         const { data: existing } = await supabase
           .from('employees')
           .select('first_name, last_name')
           .eq('id', id)
           .single()
         
-        const firstName = body.first_name || existing.first_name
-        const lastName = body.last_name || existing.last_name
-        body.slug = generateSlug(firstName, lastName)
+        const firstName = employeeData.first_name || existing.first_name
+        const lastName = employeeData.last_name || existing.last_name
+        employeeData.slug = generateSlug(firstName, lastName)
       }
       
       const { data, error } = await supabase
         .from('employees')
-        .update(body)
+        .update(employeeData)
         .eq('id', id)
         .select()
         .single()
       
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      
+      // Handle professional links if provided
+      if (professional_links && Array.isArray(professional_links)) {
+        // Delete all existing links for this employee
+        await supabase
+          .from('employee_links')
+          .delete()
+          .eq('employee_id', id)
+        
+        // Insert new links
+        if (professional_links.length > 0) {
+          const linksToInsert = professional_links.map((link, index) => ({
+            employee_id: id,
+            label: link.label,
+            url: link.url.startsWith('http') ? link.url : `https://${link.url}`,
+            icon_type: link.icon_type || 'web',
+            sort_order: link.sort_order !== undefined ? link.sort_order : index,
+            is_active: link.is_active !== undefined ? link.is_active : true
+          }))
+          
+          const { error: linksError } = await supabase
+            .from('employee_links')
+            .insert(linksToInsert)
+          
+          if (linksError) {
+            console.error('Error updating links:', linksError)
+            return NextResponse.json({ 
+              error: 'Employee updated but links failed: ' + linksError.message 
+            }, { status: 500 })
+          }
+        }
       }
       
       return NextResponse.json(data)
