@@ -292,6 +292,14 @@ export default function EditEmployee({ params }) {
                   />
                 </div>
 
+                {/* Professional Links Section */}
+                <div className="border-t pt-6">
+                  <ProfessionalLinksManager
+                    initialLinks={professionalLinks}
+                    onChange={setProfessionalLinks}
+                  />
+                </div>
+
                 <div className="border-t pt-6">
                   <label className="block text-gray-700 font-medium mb-3">
                     Employee Photo
