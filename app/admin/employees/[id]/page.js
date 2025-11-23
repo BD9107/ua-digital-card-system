@@ -47,6 +47,7 @@ export default function EditEmployee({ params }) {
       const data = await response.json()
       setEmployee(data)
       setFormData(data)
+      setProfessionalLinks(data.professional_links || [])
       
       // Fetch QR code
       const qrResponse = await fetch(`/api/qrcode?id=${id}`)
