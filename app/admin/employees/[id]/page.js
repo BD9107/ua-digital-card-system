@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import ProfessionalLinksManager from '@/components/ProfessionalLinksManager'
 
 export default function EditEmployee({ params }) {
   const { id } = params
@@ -14,6 +15,7 @@ export default function EditEmployee({ params }) {
   const [error, setError] = useState(null)
   const [employee, setEmployee] = useState(null)
   const [formData, setFormData] = useState(null)
+  const [professionalLinks, setProfessionalLinks] = useState([])
   const [qrCode, setQrCode] = useState(null)
   const router = useRouter()
   const supabase = createClient()
