@@ -209,7 +209,15 @@ export default function NewEmployee() {
               />
             </div>
 
-            <div className="flex gap-4 pt-4">
+            {/* Professional Links Section */}
+            <div className="border-t pt-6">
+              <ProfessionalLinksManager
+                initialLinks={professionalLinks}
+                onChange={setProfessionalLinks}
+              />
+            </div>
+
+            <div className="flex gap-4 pt-4 border-t">
               <button
                 type="submit"
                 disabled={loading}
