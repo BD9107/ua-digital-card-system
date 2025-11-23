@@ -295,26 +295,49 @@ export async function POST(request) {
     }
     const { supabase } = authResult
 
-    // Create employee
+    // Create employee (with optional professional links)
     if (segments[0] === 'employees' && segments.length === 1) {
       const body = await request.json()
       
+      // Extract professional_links if provided
+      const { professional_links, ...employeeData } = body
+      
       // Generate unique ID and slug
       const employeeId = `emp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const slug = generateSlug(body.first_name, body.last_name)
+      const slug = generateSlug(employeeData.first_name, employeeData.last_name)
       
       const { data, error } = await supabase
         .from('employees')
         .insert([{
           id: employeeId,
           slug,
-          ...body,
+          ...employeeData,
         }])
         .select()
         .single()
       
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      
+      // Handle professional links if provided
+      if (professional_links && Array.isArray(professional_links) && professional_links.length > 0) {
+        const linksToInsert = professional_links.map((link, index) => ({
+          employee_id: employeeId,
+          label: link.label,
+          url: link.url.startsWith('http') ? link.url : `https://${link.url}`,
+          icon_type: link.icon_type || 'web',
+          sort_order: link.sort_order !== undefined ? link.sort_order : index,
+          is_active: link.is_active !== undefined ? link.is_active : true
+        }))
+        
+        const { error: linksError } = await supabase
+          .from('employee_links')
+          .insert(linksToInsert)
+        
+        if (linksError) {
+          console.error('Error creating links:', linksError)
+        }
       }
       
       return NextResponse.json(data)
