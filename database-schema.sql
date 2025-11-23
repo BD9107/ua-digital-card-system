@@ -132,6 +132,12 @@ ON employee_links FOR DELETE
 TO authenticated 
 USING (true);
 
+-- Create policy for public read access (for public profile pages)
+CREATE POLICY "Allow public read active links" 
+ON employee_links FOR SELECT 
+TO anon 
+USING (is_active = true);
+
 -- Auto-update timestamp trigger for employee_links
 DROP TRIGGER IF EXISTS update_employee_links_timestamp ON employee_links;
 CREATE TRIGGER update_employee_links_timestamp
