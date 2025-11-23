@@ -47,13 +47,19 @@ export default function NewEmployee() {
       // Get session token
       const { data: { session } } = await supabase.auth.getSession()
       
+      // Include professional links in the create
+      const createData = {
+        ...formData,
+        professional_links: professionalLinks
+      }
+      
       const response = await fetch('/api/employees', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(createData)
       })
 
       if (!response.ok) {
