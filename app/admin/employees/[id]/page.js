@@ -74,13 +74,19 @@ export default function EditEmployee({ params }) {
       // Get session token
       const { data: { session } } = await supabase.auth.getSession()
       
+      // Include professional links in the update
+      const updateData = {
+        ...formData,
+        professional_links: professionalLinks
+      }
+      
       const response = await fetch(`/api/employees/${id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(updateData)
       })
 
       if (!response.ok) {
@@ -88,7 +94,7 @@ export default function EditEmployee({ params }) {
         throw new Error(data.error || 'Failed to update employee')
       }
 
-      alert('Employee updated successfully!')
+      alert('Employee and links updated successfully!')
       router.push('/admin/dashboard')
     } catch (error) {
       setError(error.message)
