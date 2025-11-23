@@ -140,6 +140,8 @@ export async function GET(request) {
         console.error('Error fetching public links:', linksError)
       }
       
+      console.log(`Public profile for ${id}: Found ${links?.length || 0} professional links`)
+      
       return NextResponse.json({
         ...employee,
         professional_links: links || []
