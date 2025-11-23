@@ -114,7 +114,13 @@ export async function GET(request) {
 
     // Public employee profile (no auth required, with active links)
     if (segments[0] === 'public' && segments[1] === 'employees') {
-      const supabase = await createSupabaseServer()
+      // Use client without auth for public access
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      )
+      
       const id = segments[2]
       
       const { data: employee, error } = await supabase
@@ -125,6 +131,7 @@ export async function GET(request) {
         .single()
       
       if (error || !employee) {
+        console.error('Error fetching employee:', error)
         return NextResponse.json({ error: 'Employee not found' }, { status: 404 })
       }
       
