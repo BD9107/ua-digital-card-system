@@ -197,9 +197,9 @@ export async function GET(request) {
       return NextResponse.json(data || [])
     }
 
-    // Get single employee
+    // Get single employee (with professional links)
     if (segments[0] === 'employees' && segments[1]) {
-      const { data, error } = await supabase
+      const { data: employee, error } = await supabase
         .from('employees')
         .select('*')
         .eq('id', segments[1])
@@ -209,7 +209,21 @@ export async function GET(request) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
       
-      return NextResponse.json(data)
+      // Fetch professional links for this employee
+      const { data: links, error: linksError } = await supabase
+        .from('employee_links')
+        .select('*')
+        .eq('employee_id', segments[1])
+        .order('sort_order', { ascending: true })
+      
+      if (linksError) {
+        console.error('Error fetching links:', linksError)
+      }
+      
+      return NextResponse.json({
+        ...employee,
+        professional_links: links || []
+      })
     }
 
     return NextResponse.json({ message: 'API is running' })
