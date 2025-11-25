@@ -190,7 +190,7 @@ export default function EditEmployee({ params }) {
                       value={formData?.first_name || ''}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
 
@@ -204,7 +204,7 @@ export default function EditEmployee({ params }) {
                       value={formData?.last_name || ''}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
                 </div>
@@ -219,7 +219,7 @@ export default function EditEmployee({ params }) {
                     value={formData?.email || ''}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    className="input-material"
                   />
                 </div>
 
@@ -233,7 +233,7 @@ export default function EditEmployee({ params }) {
                       name="phone"
                       value={formData?.phone || ''}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
 
@@ -246,7 +246,7 @@ export default function EditEmployee({ params }) {
                       name="whatsapp"
                       value={formData?.whatsapp || ''}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
                 </div>
@@ -261,7 +261,7 @@ export default function EditEmployee({ params }) {
                       name="job_title"
                       value={formData?.job_title || ''}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
 
@@ -274,7 +274,7 @@ export default function EditEmployee({ params }) {
                       name="department"
                       value={formData?.department || ''}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
                 </div>
@@ -288,7 +288,7 @@ export default function EditEmployee({ params }) {
                     name="website"
                     value={formData?.website || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    className="input-material"
                   />
                 </div>
 
