@@ -230,7 +230,7 @@ export default function AdminDashboard() {
             <p className="text-gray-600 mb-6">Add your first employee or import from CSV</p>
             <Link
               href="/admin/employees/new"
-              className="inline-block bg-[#003366] text-white px-6 py-2 rounded-lg hover:bg-[#004488] transition-colors"
+              className="btn-primary inline-block"
             >
               Add First Employee
             </Link>
