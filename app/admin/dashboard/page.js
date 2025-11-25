@@ -149,18 +149,18 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-[#003366] text-white">
+      <div className="bg-[#002147] text-white shadow-md">
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-              <p className="text-gray-300 mt-1">Manage your team's digital cards</p>
+              <h1 className="text-3xl font-medium">Admin Dashboard</h1>
+              <p className="text-gray-300 mt-1 font-light">Manage your team's digital cards</p>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm">{user?.email}</span>
+              <span className="text-sm font-light">{user?.email}</span>
               <button
                 onClick={handleSignOut}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                className="btn-danger"
               >
                 Sign Out
               </button>
