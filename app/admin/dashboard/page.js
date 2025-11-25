@@ -83,6 +83,7 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this employee?')) return
+    if (!supabase) return
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -93,13 +94,14 @@ export default function AdminDashboard() {
           'Authorization': `Bearer ${session?.access_token}`
         }
       })
-      fetchEmployees()
+      fetchEmployees(supabase)
     } catch (error) {
       console.error('Error deleting employee:', error)
     }
   }
 
   const handleToggleActive = async (employee) => {
+    if (!supabase) return
     try {
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -111,7 +113,7 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({ is_active: !employee.is_active })
       })
-      fetchEmployees()
+      fetchEmployees(supabase)
     } catch (error) {
       console.error('Error updating employee:', error)
     }
@@ -119,7 +121,7 @@ export default function AdminDashboard() {
 
   const handleCSVImport = async (e) => {
     const file = e.target.files[0]
-    if (!file) return
+    if (!file || !supabase) return
 
     setImporting(true)
 
