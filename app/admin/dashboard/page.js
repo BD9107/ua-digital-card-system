@@ -4,46 +4,58 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Switch } from '@/components/ui/switch'
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [employees, setEmployees] = useState([])
   const [importing, setImporting] = useState(false)
+  const [supabase, setSupabase] = useState(null)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      try {
+        const supabaseClient = createClient()
+        setSupabase(supabaseClient)
+        
+        const { data: { session } } = await supabaseClient.auth.getSession()
 
-      if (!session) {
-        router.push('/admin/login')
-        return
+        if (!session) {
+          router.push('/admin/login')
+          return
+        }
+
+        setUser(session.user)
+        setLoading(false)
+        fetchEmployees(supabaseClient)
+      } catch (error) {
+        console.error('Error initializing:', error)
+        setLoading(false)
       }
-
-      setUser(session.user)
-      setLoading(false)
-      fetchEmployees()
     }
 
     checkAuth()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'SIGNED_OUT') {
-          router.push('/admin/login')
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          if (event === 'SIGNED_OUT') {
+            router.push('/admin/login')
+          }
         }
-      }
-    )
+      )
 
-    return () => subscription.unsubscribe()
-  }, [])
+      return () => subscription.unsubscribe()
+    }
+  }, [supabase])
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = async (supabaseClient) => {
+    if (!supabaseClient) return
     try {
       // Get session token
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabaseClient.auth.getSession()
       
       const response = await fetch('/api/employees', {
         headers: {
@@ -63,12 +75,15 @@ export default function AdminDashboard() {
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
     router.push('/admin/login')
   }
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this employee?')) return
+    if (!supabase) return
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -79,13 +94,14 @@ export default function AdminDashboard() {
           'Authorization': `Bearer ${session?.access_token}`
         }
       })
-      fetchEmployees()
+      fetchEmployees(supabase)
     } catch (error) {
       console.error('Error deleting employee:', error)
     }
   }
 
   const handleToggleActive = async (employee) => {
+    if (!supabase) return
     try {
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -97,7 +113,7 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({ is_active: !employee.is_active })
       })
-      fetchEmployees()
+      fetchEmployees(supabase)
     } catch (error) {
       console.error('Error updating employee:', error)
     }
@@ -105,7 +121,7 @@ export default function AdminDashboard() {
 
   const handleCSVImport = async (e) => {
     const file = e.target.files[0]
-    if (!file) return
+    if (!file || !supabase) return
 
     setImporting(true)
 
@@ -131,7 +147,7 @@ export default function AdminDashboard() {
 
       const result = await response.json()
       alert(`Successfully imported ${result.count} employees!`)
-      fetchEmployees()
+      fetchEmployees(supabase)
     } catch (error) {
       alert(`Import failed: ${error.message}`)
     } finally {
@@ -148,13 +164,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-[#002147] text-white shadow-md">
+      {/* Header with UA Blue */}
+      <div className="bg-[#0033AA] text-white shadow-lg elevation-4">
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-medium">Admin Dashboard</h1>
-              <p className="text-gray-300 mt-1 font-light">Manage your team's digital cards</p>
+              <p className="text-blue-100 mt-1 font-light">Manage your team's digital cards</p>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm font-light">{user?.email}</span>
@@ -238,14 +254,14 @@ export default function AdminDashboard() {
         ) : (
           <div className="card-material">
             <table className="min-w-full">
-              <thead className="bg-gradient-to-r from-[#002147] to-[#003366] rounded-t-lg">
+              <thead className="bg-gradient-to-r from-[#0033AA] to-[#0052d6] rounded-t-xl">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tl-lg">Employee</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tl-xl">Employee</th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Contact</th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Position</th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Public URL</th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tr-lg">Actions</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tr-xl">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -254,9 +270,9 @@ export default function AdminDashboard() {
                     <td className="px-6 py-5">
                       <div className="flex items-center">
                         {employee.photo_url ? (
-                          <img src={employee.photo_url} alt="" className="h-12 w-12 rounded-full object-cover shadow-sm" />
+                          <img src={employee.photo_url} alt="" className="h-12 w-12 rounded-full object-cover shadow-md elevation-2" />
                         ) : (
-                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#002147] to-[#3949ab] flex items-center justify-center shadow-sm">
+                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#0033AA] to-[#0052d6] flex items-center justify-center shadow-md elevation-2">
                             <span className="text-white font-medium text-lg">
                               {employee.first_name[0]}{employee.last_name[0]}
                             </span>
@@ -293,7 +309,7 @@ export default function AdminDashboard() {
                         href={`${baseUrl}/staff/${employee.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#3949ab] hover:text-[#303f9f] font-medium flex items-center gap-1"
+                        className="text-[#0033AA] hover:text-[#002a8f] font-medium flex items-center gap-1"
                       >
                         View
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -302,29 +318,30 @@ export default function AdminDashboard() {
                       </a>
                     </td>
                     <td className="px-6 py-5">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-3">
                         <Link
                           href={`/admin/employees/${employee.id}`}
-                          className="p-2 text-[#002147] hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Edit"
+                          className="p-2.5 text-[#0033AA] hover:bg-blue-50 rounded-xl transition-colors elevation-2"
+                          title="Edit employee"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </Link>
-                        <button
-                          onClick={() => handleToggleActive(employee)}
-                          className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
-                          title={employee.is_active ? 'Disable' : 'Enable'}
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                          </svg>
-                        </button>
+                        <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-xl" title={employee.is_active ? 'Disable staff card' : 'Enable staff card'}>
+                          <Switch
+                            checked={employee.is_active}
+                            onCheckedChange={() => handleToggleActive(employee)}
+                            className="data-[state=checked]:bg-[#4caf50] data-[state=unchecked]:bg-gray-300"
+                          />
+                          <span className={`text-xs font-medium ${employee.is_active ? 'text-[#4caf50]' : 'text-gray-500'}`}>
+                            {employee.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
                         <button
                           onClick={() => handleDelete(employee.id)}
-                          className="p-2 text-[#f44336] hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
+                          className="p-2.5 text-[#f44336] hover:bg-red-50 rounded-xl transition-colors elevation-2"
+                          title="Delete employee"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
