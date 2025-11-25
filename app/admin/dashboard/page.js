@@ -236,28 +236,28 @@ export default function AdminDashboard() {
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="card-material">
+            <table className="min-w-full">
+              <thead className="bg-gradient-to-r from-[#002147] to-[#003366] rounded-t-lg">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Public URL</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tl-lg">Employee</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Contact</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Position</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Public URL</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tr-lg">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {employees.map((employee) => (
-                  <tr key={employee.id} className={!employee.is_active ? 'bg-gray-50 opacity-60' : ''}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+              <tbody className="divide-y divide-gray-200">
+                {employees.map((employee, index) => (
+                  <tr key={employee.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'} ${!employee.is_active ? 'opacity-60' : ''}`}>
+                    <td className="px-6 py-5">
                       <div className="flex items-center">
                         {employee.photo_url ? (
-                          <img src={employee.photo_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                          <img src={employee.photo_url} alt="" className="h-12 w-12 rounded-full object-cover shadow-sm" />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-500 font-medium">
+                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#002147] to-[#3949ab] flex items-center justify-center shadow-sm">
+                            <span className="text-white font-medium text-lg">
                               {employee.first_name[0]}{employee.last_name[0]}
                             </span>
                           </div>
@@ -266,22 +266,26 @@ export default function AdminDashboard() {
                           <div className="text-sm font-medium text-gray-900">
                             {employee.first_name} {employee.last_name}
                           </div>
+                          {employee.job_title && (
+                            <div className="text-xs text-gray-500 mt-0.5">{employee.job_title}</div>
+                          )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-5">
                       <div className="text-sm text-gray-900">{employee.email}</div>
-                      <div className="text-sm text-gray-500">{employee.phone}</div>
+                      {employee.phone && (
+                        <div className="text-xs text-gray-500 mt-0.5">{employee.phone}</div>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{employee.job_title}</div>
-                      <div className="text-sm text-gray-500">{employee.department}</div>
+                    <td className="px-6 py-5">
+                      {employee.department && (
+                        <span className="badge-department">{employee.department}</span>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        employee.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {employee.is_active ? 'Active' : 'Disabled'}
+                    <td className="px-6 py-5">
+                      <span className={employee.is_active ? 'badge-active' : 'badge-inactive'}>
+                        {employee.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
