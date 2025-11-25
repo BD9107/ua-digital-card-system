@@ -122,7 +122,7 @@ export default function PublicProfile({ params }) {
               {employee.email && (
                 <a 
                   href={`mailto:${employee.email}`}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors elevation-2"
                 >
                   <div className="w-10 h-10 bg-[#0033AA] rounded-full flex items-center justify-center flex-shrink-0 elevation-2">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +139,7 @@ export default function PublicProfile({ params }) {
               {employee.phone && (
                 <a 
                   href={`tel:${employee.phone}`}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors elevation-2"
                 >
                   <div className="w-10 h-10 bg-[#0033AA] rounded-full flex items-center justify-center flex-shrink-0 elevation-2">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +158,7 @@ export default function PublicProfile({ params }) {
                   href={`https://wa.me/${employee.whatsapp.replace(/[^0-9]/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors elevation-2"
                 >
                   <div className="w-10 h-10 bg-[#25D366] rounded-full flex items-center justify-center flex-shrink-0">
                     <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -177,7 +177,7 @@ export default function PublicProfile({ params }) {
                   href={employee.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors elevation-2"
                 >
                   <div className="w-10 h-10 bg-[#0033AA] rounded-full flex items-center justify-center flex-shrink-0 elevation-2">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,7 +202,7 @@ export default function PublicProfile({ params }) {
                     href={link.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors elevation-2"
                   >
                     <div className="w-10 h-10 bg-[#0033AA] rounded-full flex items-center justify-center flex-shrink-0 elevation-2">
                       {link.icon_type === 'linkedin' && (
