@@ -349,7 +349,7 @@ export default function EditEmployee({ params }) {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* QR Code */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="card-material">
               <h3 className="text-lg font-semibold mb-4">QR Code</h3>
               {qrCode && (
                 <div className="text-center">
