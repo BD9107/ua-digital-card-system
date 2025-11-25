@@ -366,12 +366,12 @@ export default function EditEmployee({ params }) {
             </div>
 
             {/* Public URL */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Public Profile</h3>
+            <div className="card-material">
+              <h3 className="text-lg font-medium mb-4">Public Profile</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm text-gray-600">URL:</label>
-                  <div className="text-sm bg-gray-50 p-2 rounded break-all">
+                  <label className="text-sm text-gray-600 font-medium">URL:</label>
+                  <div className="text-sm bg-gray-50 p-2 rounded break-all mt-1">
                     {profileUrl}
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export default function EditEmployee({ params }) {
                   href={profileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-center bg-[#003366] text-white py-2 rounded-lg hover:bg-[#004488] transition-colors"
+                  className="block w-full text-center btn-secondary"
                 >
                   View Profile
                 </a>
