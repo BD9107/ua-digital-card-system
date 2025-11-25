@@ -75,12 +75,12 @@ export default function PublicProfile({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#003366] to-[#004488] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#002147] to-[#3949ab] py-8 px-4">
       <div className="max-w-md mx-auto">
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-[#003366] to-[#004488] h-32"></div>
+          <div className="bg-gradient-to-r from-[#002147] to-[#3949ab] h-32"></div>
           
           {/* Profile Photo */}
           <div className="relative -mt-16 mb-4 text-center">
@@ -91,8 +91,8 @@ export default function PublicProfile({ params }) {
                 className="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg object-cover"
               />
             ) : (
-              <div className="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg bg-gray-200 flex items-center justify-center">
-                <span className="text-4xl text-gray-500 font-semibold">
+              <div className="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg bg-gradient-to-br from-[#002147] to-[#3949ab] flex items-center justify-center">
+                <span className="text-4xl text-white font-medium">
                   {employee.first_name[0]}{employee.last_name[0]}
                 </span>
               </div>
@@ -101,12 +101,12 @@ export default function PublicProfile({ params }) {
 
           {/* Employee Info */}
           <div className="px-6 pb-6">
-            <h1 className="text-3xl font-bold text-center text-gray-900 mb-2">
+            <h1 className="text-3xl font-medium text-center text-gray-900 mb-2">
               {employee.first_name} {employee.last_name}
             </h1>
             
             {employee.job_title && (
-              <p className="text-center text-lg text-[#003366] font-semibold mb-1">
+              <p className="text-center text-lg text-[#002147] font-medium mb-1">
                 {employee.job_title}
               </p>
             )}
