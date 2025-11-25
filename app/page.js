@@ -84,7 +84,7 @@ export default function HomePage() {
           <div className="space-y-4">
             <Link
               href="/admin/login"
-              className="inline-block bg-[#FFD700] text-[#002147] px-8 py-4 rounded-lg font-medium text-lg hover:bg-[#FFC700] transition-all duration-200 shadow-md hover:shadow-lg"
+              className="inline-block bg-[#FBE122] text-[#0033AA] px-8 py-4 rounded-xl font-medium text-lg hover:bg-[#f5d900] transition-all duration-200 shadow-lg hover:shadow-xl elevation-4"
             >
               Admin Login
             </Link>
