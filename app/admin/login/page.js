@@ -76,7 +76,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                className="input-material"
                 placeholder="admin@ua.aw"
                 required
               />
@@ -91,7 +91,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                className="input-material"
                 placeholder="••••••••"
                 required
               />
@@ -100,7 +100,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#003366] text-white py-3 px-4 rounded-lg font-semibold hover:bg-[#004488] disabled:bg-gray-400 transition-colors"
+              className="w-full bg-[#002147] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#003366] disabled:bg-gray-400 transition-all duration-200 shadow-sm hover:shadow-md"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>

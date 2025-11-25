@@ -112,23 +112,47 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
-    // Public employee profile (no auth required)
+    // Public employee profile (no auth required, with active links)
     if (segments[0] === 'public' && segments[1] === 'employees') {
-      const supabase = await createSupabaseServer()
+      // Use client without auth for public access
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      )
+      
       const id = segments[2]
       
-      const { data, error } = await supabase
+      const { data: employee, error } = await supabase
         .from('employees')
         .select('*')
         .eq('id', id)
         .eq('is_active', true)
         .single()
       
-      if (error || !data) {
+      if (error || !employee) {
+        console.error('Error fetching employee:', error)
         return NextResponse.json({ error: 'Employee not found' }, { status: 404 })
       }
       
-      return NextResponse.json(data)
+      // Fetch only active professional links
+      const { data: links, error: linksError } = await supabase
+        .from('employee_links')
+        .select('id, label, url, icon_type, sort_order')
+        .eq('employee_id', id)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+      
+      if (linksError) {
+        console.error('Error fetching public links:', linksError)
+      }
+      
+      console.log(`Public profile for ${id}: Found ${links?.length || 0} professional links`)
+      
+      return NextResponse.json({
+        ...employee,
+        professional_links: links || []
+      })
     }
 
     // QR Code generation
@@ -197,9 +221,9 @@ export async function GET(request) {
       return NextResponse.json(data || [])
     }
 
-    // Get single employee
+    // Get single employee (with professional links)
     if (segments[0] === 'employees' && segments[1]) {
-      const { data, error } = await supabase
+      const { data: employee, error } = await supabase
         .from('employees')
         .select('*')
         .eq('id', segments[1])
@@ -209,7 +233,21 @@ export async function GET(request) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
       
-      return NextResponse.json(data)
+      // Fetch professional links for this employee
+      const { data: links, error: linksError } = await supabase
+        .from('employee_links')
+        .select('*')
+        .eq('employee_id', segments[1])
+        .order('sort_order', { ascending: true })
+      
+      if (linksError) {
+        console.error('Error fetching links:', linksError)
+      }
+      
+      return NextResponse.json({
+        ...employee,
+        professional_links: links || []
+      })
     }
 
     return NextResponse.json({ message: 'API is running' })
@@ -266,26 +304,49 @@ export async function POST(request) {
     }
     const { supabase } = authResult
 
-    // Create employee
+    // Create employee (with optional professional links)
     if (segments[0] === 'employees' && segments.length === 1) {
       const body = await request.json()
       
+      // Extract professional_links if provided
+      const { professional_links, ...employeeData } = body
+      
       // Generate unique ID and slug
       const employeeId = `emp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const slug = generateSlug(body.first_name, body.last_name)
+      const slug = generateSlug(employeeData.first_name, employeeData.last_name)
       
       const { data, error } = await supabase
         .from('employees')
         .insert([{
           id: employeeId,
           slug,
-          ...body,
+          ...employeeData,
         }])
         .select()
         .single()
       
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      
+      // Handle professional links if provided
+      if (professional_links && Array.isArray(professional_links) && professional_links.length > 0) {
+        const linksToInsert = professional_links.map((link, index) => ({
+          employee_id: employeeId,
+          label: link.label,
+          url: link.url.startsWith('http') ? link.url : `https://${link.url}`,
+          icon_type: link.icon_type || 'web',
+          sort_order: link.sort_order !== undefined ? link.sort_order : index,
+          is_active: link.is_active !== undefined ? link.is_active : true
+        }))
+        
+        const { error: linksError } = await supabase
+          .from('employee_links')
+          .insert(linksToInsert)
+        
+        if (linksError) {
+          console.error('Error creating links:', linksError)
+        }
       }
       
       return NextResponse.json(data)
@@ -400,33 +461,68 @@ export async function PUT(request) {
     }
     const { supabase } = authResult
 
-    // Update employee
+    // Update employee (with professional links)
     if (segments[0] === 'employees' && segments[1]) {
       const body = await request.json()
       const id = segments[1]
       
+      // Extract professional_links if provided
+      const { professional_links, ...employeeData } = body
+      
       // Update slug if name changed
-      if (body.first_name || body.last_name) {
+      if (employeeData.first_name || employeeData.last_name) {
         const { data: existing } = await supabase
           .from('employees')
           .select('first_name, last_name')
           .eq('id', id)
           .single()
         
-        const firstName = body.first_name || existing.first_name
-        const lastName = body.last_name || existing.last_name
-        body.slug = generateSlug(firstName, lastName)
+        const firstName = employeeData.first_name || existing.first_name
+        const lastName = employeeData.last_name || existing.last_name
+        employeeData.slug = generateSlug(firstName, lastName)
       }
       
       const { data, error } = await supabase
         .from('employees')
-        .update(body)
+        .update(employeeData)
         .eq('id', id)
         .select()
         .single()
       
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      
+      // Handle professional links if provided
+      if (professional_links && Array.isArray(professional_links)) {
+        // Delete all existing links for this employee
+        await supabase
+          .from('employee_links')
+          .delete()
+          .eq('employee_id', id)
+        
+        // Insert new links
+        if (professional_links.length > 0) {
+          const linksToInsert = professional_links.map((link, index) => ({
+            employee_id: id,
+            label: link.label,
+            url: link.url.startsWith('http') ? link.url : `https://${link.url}`,
+            icon_type: link.icon_type || 'web',
+            sort_order: link.sort_order !== undefined ? link.sort_order : index,
+            is_active: link.is_active !== undefined ? link.is_active : true
+          }))
+          
+          const { error: linksError } = await supabase
+            .from('employee_links')
+            .insert(linksToInsert)
+          
+          if (linksError) {
+            console.error('Error updating links:', linksError)
+            return NextResponse.json({ 
+              error: 'Employee updated but links failed: ' + linksError.message 
+            }, { status: 500 })
+          }
+        }
       }
       
       return NextResponse.json(data)

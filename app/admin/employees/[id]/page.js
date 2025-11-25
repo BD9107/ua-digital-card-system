@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import ProfessionalLinksManager from '@/components/ProfessionalLinksManager'
 
 export default function EditEmployee({ params }) {
   const { id } = params
@@ -14,6 +15,7 @@ export default function EditEmployee({ params }) {
   const [error, setError] = useState(null)
   const [employee, setEmployee] = useState(null)
   const [formData, setFormData] = useState(null)
+  const [professionalLinks, setProfessionalLinks] = useState([])
   const [qrCode, setQrCode] = useState(null)
   const router = useRouter()
   const supabase = createClient()
@@ -45,6 +47,7 @@ export default function EditEmployee({ params }) {
       const data = await response.json()
       setEmployee(data)
       setFormData(data)
+      setProfessionalLinks(data.professional_links || [])
       
       // Fetch QR code
       const qrResponse = await fetch(`/api/qrcode?id=${id}`)
@@ -71,13 +74,19 @@ export default function EditEmployee({ params }) {
       // Get session token
       const { data: { session } } = await supabase.auth.getSession()
       
+      // Include professional links in the update
+      const updateData = {
+        ...formData,
+        professional_links: professionalLinks
+      }
+      
       const response = await fetch(`/api/employees/${id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(updateData)
       })
 
       if (!response.ok) {
@@ -85,7 +94,7 @@ export default function EditEmployee({ params }) {
         throw new Error(data.error || 'Failed to update employee')
       }
 
-      alert('Employee updated successfully!')
+      alert('Employee and links updated successfully!')
       router.push('/admin/dashboard')
     } catch (error) {
       setError(error.message)
@@ -181,7 +190,7 @@ export default function EditEmployee({ params }) {
                       value={formData?.first_name || ''}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
 
@@ -195,7 +204,7 @@ export default function EditEmployee({ params }) {
                       value={formData?.last_name || ''}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
                 </div>
@@ -210,7 +219,7 @@ export default function EditEmployee({ params }) {
                     value={formData?.email || ''}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    className="input-material"
                   />
                 </div>
 
@@ -224,7 +233,7 @@ export default function EditEmployee({ params }) {
                       name="phone"
                       value={formData?.phone || ''}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
 
@@ -237,7 +246,7 @@ export default function EditEmployee({ params }) {
                       name="whatsapp"
                       value={formData?.whatsapp || ''}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
                 </div>
@@ -252,7 +261,7 @@ export default function EditEmployee({ params }) {
                       name="job_title"
                       value={formData?.job_title || ''}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
 
@@ -265,7 +274,7 @@ export default function EditEmployee({ params }) {
                       name="department"
                       value={formData?.department || ''}
                       onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                      className="input-material"
                     />
                   </div>
                 </div>
@@ -279,7 +288,15 @@ export default function EditEmployee({ params }) {
                     name="website"
                     value={formData?.website || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                    className="input-material"
+                  />
+                </div>
+
+                {/* Professional Links Section */}
+                <div className="border-t pt-6">
+                  <ProfessionalLinksManager
+                    initialLinks={professionalLinks}
+                    onChange={setProfessionalLinks}
                   />
                 </div>
 
@@ -314,13 +331,13 @@ export default function EditEmployee({ params }) {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="flex-1 bg-[#003366] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#004488] disabled:bg-gray-400 transition-colors"
+                    className="flex-1 btn-primary"
                   >
                     {saving ? 'Saving...' : 'Save Changes'}
                   </button>
                   <Link
                     href="/admin/dashboard"
-                    className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-center"
+                    className="flex-1 btn-outline text-center"
                   >
                     Cancel
                   </Link>
@@ -332,7 +349,7 @@ export default function EditEmployee({ params }) {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* QR Code */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="card-material">
               <h3 className="text-lg font-semibold mb-4">QR Code</h3>
               {qrCode && (
                 <div className="text-center">
@@ -349,12 +366,12 @@ export default function EditEmployee({ params }) {
             </div>
 
             {/* Public URL */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Public Profile</h3>
+            <div className="card-material">
+              <h3 className="text-lg font-medium mb-4">Public Profile</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm text-gray-600">URL:</label>
-                  <div className="text-sm bg-gray-50 p-2 rounded break-all">
+                  <label className="text-sm text-gray-600 font-medium">URL:</label>
+                  <div className="text-sm bg-gray-50 p-2 rounded break-all mt-1">
                     {profileUrl}
                   </div>
                 </div>
@@ -362,7 +379,7 @@ export default function EditEmployee({ params }) {
                   href={profileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-center bg-[#003366] text-white py-2 rounded-lg hover:bg-[#004488] transition-colors"
+                  className="block w-full text-center btn-secondary"
                 >
                   View Profile
                 </a>

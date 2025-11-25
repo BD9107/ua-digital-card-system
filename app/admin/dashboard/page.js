@@ -149,18 +149,18 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-[#003366] text-white">
+      <div className="bg-[#002147] text-white shadow-md">
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-              <p className="text-gray-300 mt-1">Manage your team's digital cards</p>
+              <h1 className="text-3xl font-medium">Admin Dashboard</h1>
+              <p className="text-gray-300 mt-1 font-light">Manage your team's digital cards</p>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm">{user?.email}</span>
+              <span className="text-sm font-light">{user?.email}</span>
               <button
                 onClick={handleSignOut}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                className="btn-danger"
               >
                 Sign Out
               </button>
@@ -176,7 +176,7 @@ export default function AdminDashboard() {
             <div className="flex gap-3">
               <Link
                 href="/admin/employees/new"
-                className="bg-[#003366] text-white px-6 py-2 rounded-lg hover:bg-[#004488] transition-colors flex items-center gap-2"
+                className="btn-primary flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
                 Add Employee
               </Link>
 
-              <label className="bg-[#FFD700] text-[#003366] px-6 py-2 rounded-lg hover:bg-[#FFC700] transition-colors cursor-pointer flex items-center gap-2">
+              <label className="btn-secondary cursor-pointer flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
@@ -201,7 +201,7 @@ export default function AdminDashboard() {
               <a
                 href="/sample-employees.csv"
                 download
-                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors flex items-center gap-2"
+                className="btn-outline flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -230,34 +230,34 @@ export default function AdminDashboard() {
             <p className="text-gray-600 mb-6">Add your first employee or import from CSV</p>
             <Link
               href="/admin/employees/new"
-              className="inline-block bg-[#003366] text-white px-6 py-2 rounded-lg hover:bg-[#004488] transition-colors"
+              className="btn-primary inline-block"
             >
               Add First Employee
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="card-material">
+            <table className="min-w-full">
+              <thead className="bg-gradient-to-r from-[#002147] to-[#003366] rounded-t-lg">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Public URL</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tl-lg">Employee</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Contact</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Position</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Public URL</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider rounded-tr-lg">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {employees.map((employee) => (
-                  <tr key={employee.id} className={!employee.is_active ? 'bg-gray-50 opacity-60' : ''}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+              <tbody className="divide-y divide-gray-200">
+                {employees.map((employee, index) => (
+                  <tr key={employee.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'} ${!employee.is_active ? 'opacity-60' : ''}`}>
+                    <td className="px-6 py-5">
                       <div className="flex items-center">
                         {employee.photo_url ? (
-                          <img src={employee.photo_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                          <img src={employee.photo_url} alt="" className="h-12 w-12 rounded-full object-cover shadow-sm" />
                         ) : (
-                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-500 font-medium">
+                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#002147] to-[#3949ab] flex items-center justify-center shadow-sm">
+                            <span className="text-white font-medium text-lg">
                               {employee.first_name[0]}{employee.last_name[0]}
                             </span>
                           </div>
@@ -266,53 +266,71 @@ export default function AdminDashboard() {
                           <div className="text-sm font-medium text-gray-900">
                             {employee.first_name} {employee.last_name}
                           </div>
+                          {employee.job_title && (
+                            <div className="text-xs text-gray-500 mt-0.5">{employee.job_title}</div>
+                          )}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-5">
                       <div className="text-sm text-gray-900">{employee.email}</div>
-                      <div className="text-sm text-gray-500">{employee.phone}</div>
+                      {employee.phone && (
+                        <div className="text-xs text-gray-500 mt-0.5">{employee.phone}</div>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{employee.job_title}</div>
-                      <div className="text-sm text-gray-500">{employee.department}</div>
+                    <td className="px-6 py-5">
+                      {employee.department && (
+                        <span className="badge-department">{employee.department}</span>
+                      )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        employee.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {employee.is_active ? 'Active' : 'Disabled'}
+                    <td className="px-6 py-5">
+                      <span className={employee.is_active ? 'badge-active' : 'badge-inactive'}>
+                        {employee.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-6 py-5 text-sm">
                       <a
                         href={`${baseUrl}/staff/${employee.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#003366] hover:text-[#004488] underline"
+                        className="text-[#3949ab] hover:text-[#303f9f] font-medium flex items-center gap-1"
                       >
-                        /staff/{employee.id}
+                        View
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                       </a>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <Link
-                        href={`/admin/employees/${employee.id}`}
-                        className="text-[#003366] hover:text-[#004488]"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => handleToggleActive(employee)}
-                        className="text-yellow-600 hover:text-yellow-900"
-                      >
-                        {employee.is_active ? 'Disable' : 'Enable'}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(employee.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/employees/${employee.id}`}
+                          className="p-2 text-[#002147] hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </Link>
+                        <button
+                          onClick={() => handleToggleActive(employee)}
+                          className="p-2 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                          title={employee.is_active ? 'Disable' : 'Enable'}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(employee.id)}
+                          className="p-2 text-[#f44336] hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

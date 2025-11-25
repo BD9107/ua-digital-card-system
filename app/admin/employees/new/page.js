@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import ProfessionalLinksManager from '@/components/ProfessionalLinksManager'
 
 export default function NewEmployee() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [professionalLinks, setProfessionalLinks] = useState([])
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -45,13 +47,19 @@ export default function NewEmployee() {
       // Get session token
       const { data: { session } } = await supabase.auth.getSession()
       
+      // Include professional links in the create
+      const createData = {
+        ...formData,
+        professional_links: professionalLinks
+      }
+      
       const response = await fetch('/api/employees', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(createData)
       })
 
       if (!response.ok) {
@@ -96,7 +104,7 @@ export default function NewEmployee() {
                   value={formData.first_name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                  className="input-material"
                 />
               </div>
 
@@ -110,7 +118,7 @@ export default function NewEmployee() {
                   value={formData.last_name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                  className="input-material"
                 />
               </div>
             </div>
@@ -125,7 +133,7 @@ export default function NewEmployee() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                className="input-material"
               />
             </div>
 
@@ -140,7 +148,7 @@ export default function NewEmployee() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="+297-123-4567"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                  className="input-material"
                 />
               </div>
 
@@ -154,7 +162,7 @@ export default function NewEmployee() {
                   value={formData.whatsapp}
                   onChange={handleChange}
                   placeholder="+297-123-4567"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                  className="input-material"
                 />
               </div>
             </div>
@@ -169,7 +177,7 @@ export default function NewEmployee() {
                   name="job_title"
                   value={formData.job_title}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                  className="input-material"
                 />
               </div>
 
@@ -182,7 +190,7 @@ export default function NewEmployee() {
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                  className="input-material"
                 />
               </div>
             </div>
@@ -197,21 +205,29 @@ export default function NewEmployee() {
                 value={formData.website}
                 onChange={handleChange}
                 placeholder="https://"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+                className="input-material"
               />
             </div>
 
-            <div className="flex gap-4 pt-4">
+            {/* Professional Links Section */}
+            <div className="border-t pt-6">
+              <ProfessionalLinksManager
+                initialLinks={professionalLinks}
+                onChange={setProfessionalLinks}
+              />
+            </div>
+
+            <div className="flex gap-4 pt-4 border-t">
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-[#003366] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#004488] disabled:bg-gray-400 transition-colors"
+                className="flex-1 btn-primary"
               >
                 {loading ? 'Creating...' : 'Create Employee'}
               </button>
               <Link
                 href="/admin/dashboard"
-                className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-center"
+                className="flex-1 btn-outline text-center"
               >
                 Cancel
               </Link>
