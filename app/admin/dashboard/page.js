@@ -11,21 +11,29 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [employees, setEmployees] = useState([])
   const [importing, setImporting] = useState(false)
+  const [supabase, setSupabase] = useState(null)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      try {
+        const supabaseClient = createClient()
+        setSupabase(supabaseClient)
+        
+        const { data: { session } } = await supabaseClient.auth.getSession()
 
-      if (!session) {
-        router.push('/admin/login')
-        return
+        if (!session) {
+          router.push('/admin/login')
+          return
+        }
+
+        setUser(session.user)
+        setLoading(false)
+        fetchEmployees(supabaseClient)
+      } catch (error) {
+        console.error('Error initializing:', error)
+        setLoading(false)
       }
-
-      setUser(session.user)
-      setLoading(false)
-      fetchEmployees()
     }
 
     checkAuth()
