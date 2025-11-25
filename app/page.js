@@ -59,9 +59,9 @@ export default function HomePage() {
               <p className="text-gray-200 text-sm">Instant access with QR codes</p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <div className="w-12 h-12 bg-[#FFD700] rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <svg className="w-6 h-6 text-[#003366]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 elevation-4">
+              <div className="w-12 h-12 bg-[#FBE122] rounded-xl mx-auto mb-4 flex items-center justify-center shadow-md">
+                <svg className="w-6 h-6 text-[#0033AA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
               </div>
@@ -69,9 +69,9 @@ export default function HomePage() {
               <p className="text-gray-200 text-sm">Optimized for mobile devices</p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-              <div className="w-12 h-12 bg-[#FFD700] rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <svg className="w-6 h-6 text-[#003366]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 elevation-4">
+              <div className="w-12 h-12 bg-[#FBE122] rounded-xl mx-auto mb-4 flex items-center justify-center shadow-md">
+                <svg className="w-6 h-6 text-[#0033AA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
               </div>
