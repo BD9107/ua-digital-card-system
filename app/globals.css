@@ -6,26 +6,46 @@
 
 @layer base {
   :root {
+    /* UA Brand Colors */
+    --ua-blue: 223 100% 33%; /* #0033AA */
+    --ua-blue-light: 223 100% 45%;
+    --ua-blue-dark: 223 100% 25%;
+    --ua-yellow: 50 98% 56%; /* #FBE122 */
+    
+    /* Base theme colors */
     --background: 0 0% 100%;
     --foreground: 210 40% 15%;
     --card: 0 0% 100%;
     --card-foreground: 210 40% 15%;
     --popover: 0 0% 100%;
     --popover-foreground: 210 40% 15%;
-    --primary: 213 94% 13%;
+    
+    /* Primary = UA Blue */
+    --primary: 223 100% 33%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 224 43% 48%;
+    
+    /* Secondary = Lighter UA Blue */
+    --secondary: 223 100% 45%;
     --secondary-foreground: 0 0% 100%;
+    
     --muted: 0 0% 96%;
     --muted-foreground: 210 20% 40%;
-    --accent: 45 100% 50%;
-    --accent-foreground: 210 40% 15%;
+    
+    /* Accent = UA Yellow (use sparingly) */
+    --accent: 50 98% 56%;
+    --accent-foreground: 223 100% 33%;
+    
     --destructive: 4 90% 58%;
     --destructive-foreground: 0 0% 98%;
     --border: 210 20% 90%;
     --input: 210 20% 90%;
-    --ring: 213 94% 13%;
-    --radius: 0.5rem;
+    --ring: 223 100% 33%;
+    --radius: 0.75rem;
+    
+    /* Status colors */
+    --status-active: 122 39% 49%; /* Green #4caf50 */
+    --status-inactive: 0 0% 62%; /* Gray #9e9e9e */
+    --status-inactive-red: 4 90% 58%; /* Red #f44336 */
   }
 }
 
