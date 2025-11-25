@@ -8,15 +8,20 @@ import Link from 'next/link'
 export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (session) {
-        router.push('/admin/dashboard')
-      } else {
+      try {
+        const supabase = createClient()
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session) {
+          router.push('/admin/dashboard')
+        } else {
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Error initializing Supabase:', error)
         setLoading(false)
       }
     }
