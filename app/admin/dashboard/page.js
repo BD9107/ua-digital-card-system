@@ -176,7 +176,7 @@ export default function AdminDashboard() {
             <div className="flex gap-3">
               <Link
                 href="/admin/employees/new"
-                className="bg-[#003366] text-white px-6 py-2 rounded-lg hover:bg-[#004488] transition-colors flex items-center gap-2"
+                className="btn-primary flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
                 Add Employee
               </Link>
 
-              <label className="bg-[#FFD700] text-[#003366] px-6 py-2 rounded-lg hover:bg-[#FFC700] transition-colors cursor-pointer flex items-center gap-2">
+              <label className="btn-secondary cursor-pointer flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
@@ -201,7 +201,7 @@ export default function AdminDashboard() {
               <a
                 href="/sample-employees.csv"
                 download
-                className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors flex items-center gap-2"
+                className="btn-outline flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
