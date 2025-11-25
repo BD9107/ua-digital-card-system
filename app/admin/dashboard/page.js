@@ -49,10 +49,11 @@ export default function AdminDashboard() {
     return () => subscription.unsubscribe()
   }, [])
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = async (supabaseClient) => {
+    if (!supabaseClient) return
     try {
       // Get session token
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabaseClient.auth.getSession()
       
       const response = await fetch('/api/employees', {
         headers: {
