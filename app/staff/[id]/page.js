@@ -75,12 +75,12 @@ export default function PublicProfile({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#002147] to-[#3949ab] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0033AA] to-[#0052d6] py-8 px-4">
       <div className="max-w-md mx-auto">
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-          {/* Header with gradient */}
-          <div className="bg-gradient-to-r from-[#002147] to-[#3949ab] h-32"></div>
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden elevation-8">
+          {/* Header with UA Blue gradient */}
+          <div className="bg-gradient-to-r from-[#0033AA] to-[#0052d6] h-32"></div>
           
           {/* Profile Photo */}
           <div className="relative -mt-16 mb-4 text-center">
