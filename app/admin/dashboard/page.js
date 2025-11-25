@@ -38,16 +38,18 @@ export default function AdminDashboard() {
 
     checkAuth()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'SIGNED_OUT') {
-          router.push('/admin/login')
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          if (event === 'SIGNED_OUT') {
+            router.push('/admin/login')
+          }
         }
-      }
-    )
+      )
 
-    return () => subscription.unsubscribe()
-  }, [])
+      return () => subscription.unsubscribe()
+    }
+  }, [supabase])
 
   const fetchEmployees = async (supabaseClient) => {
     if (!supabaseClient) return
