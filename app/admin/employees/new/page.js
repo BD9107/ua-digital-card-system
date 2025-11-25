@@ -221,13 +221,13 @@ export default function NewEmployee() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-[#003366] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#004488] disabled:bg-gray-400 transition-colors"
+                className="flex-1 btn-primary"
               >
                 {loading ? 'Creating...' : 'Create Employee'}
               </button>
               <Link
                 href="/admin/dashboard"
-                className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-colors text-center"
+                className="flex-1 btn-outline text-center"
               >
                 Cancel
               </Link>
