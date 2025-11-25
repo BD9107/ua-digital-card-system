@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Switch } from '@/components/ui/switch'
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null)
