@@ -421,12 +421,13 @@ export default function EditEmployee({ params }) {
         </div>
       </div>
       
-      <Toast
-        show={toast.show}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast({ show: false, message: '', type: 'success' })}
-      />
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   )
 }
