@@ -74,7 +74,7 @@ export default function HomePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
               </svg>
             </div>
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-[#1B9E9E] to-[#C4B896] bg-clip-text text-transparent mb-4 leading-tight pb-2">UA Digital Card System</h1>
+            <h1 className="text-6xl font-bold bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] bg-clip-text text-transparent mb-4 leading-tight pb-2">UA Digital Card System</h1>
             <p className="text-xl text-gray-600">Modern Digital Business Cards for Your Team</p>
           </div>
 
