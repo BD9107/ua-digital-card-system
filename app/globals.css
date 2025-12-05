@@ -107,7 +107,7 @@
   }
   
   .badge-department {
-    @apply px-3 py-1.5 text-xs font-semibold rounded-full bg-[#1B9E9E]/10 text-[#1B9E9E] border border-[#1B9E9E]/20;
+    @apply px-3 py-1.5 text-xs font-semibold rounded-full bg-[#C4B896]/20 text-[#8B7347] border border-[#C4B896]/40;
   }
   
   /* Modern Soft Shadows with Teal Tint */
