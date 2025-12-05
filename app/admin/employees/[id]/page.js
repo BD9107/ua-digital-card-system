@@ -114,8 +114,8 @@ export default function EditEmployee({ params }) {
         throw new Error(data.error || 'Failed to update employee')
       }
 
-      showToast('Employee and links updated successfully!')
-      router.push('/admin/dashboard')
+      setToast({ message: 'Employee and links updated successfully!', type: 'success' })
+      setTimeout(() => router.push('/admin/dashboard'), 1500)
     } catch (error) {
       setError(error.message)
     } finally {
