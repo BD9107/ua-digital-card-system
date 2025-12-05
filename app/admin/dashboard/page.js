@@ -257,7 +257,20 @@ export default function AdminDashboard() {
                 </svg>
               </div>
               <div className="text-sm text-gray-600">
-                Total Employees: <span className="font-semibold">{employees.length}</span>
+                {searchQuery ? (
+                  <>
+                    Showing: <span className="font-semibold text-[#1B9E9E]">
+                      {employees.filter(e => 
+                        e.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        e.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        e.job_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        e.department?.toLowerCase().includes(searchQuery.toLowerCase())
+                      ).length}
+                    </span> of {employees.length}
+                  </>
+                ) : (
+                  <>Total Employees: <span className="font-semibold">{employees.length}</span></>
+                )}
               </div>
             </div>
           </div>
