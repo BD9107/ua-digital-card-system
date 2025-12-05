@@ -315,7 +315,7 @@ export default function AdminDashboard() {
                         href={`${baseUrl}/staff/${employee.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#0033AA] hover:text-[#002a8f] font-medium flex items-center gap-1"
+                        className="text-[#1B9E9E] hover:text-[#178888] font-medium flex items-center gap-1"
                       >
                         View
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
