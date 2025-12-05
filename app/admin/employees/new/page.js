@@ -98,7 +98,7 @@ export default function NewEmployee() {
     <div className="min-h-screen bg-[#F7F9FC]">
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-6 py-5">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] bg-clip-text text-transparent">Add New Employee</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] bg-clip-text text-transparent">Add New Employee</h1>
           <p className="text-gray-500 mt-1 text-sm">Create a new digital card</p>
         </div>
       </div>
