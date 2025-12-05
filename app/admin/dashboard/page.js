@@ -84,7 +84,7 @@ export default function AdminDashboard() {
   }
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this employee?')) return
+    if (!window.confirm('Are you sure you want to delete this employee?')) return
     if (!supabase) return
 
     try {
