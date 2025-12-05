@@ -14,6 +14,9 @@ export default function AdminDashboard() {
   const [importing, setImporting] = useState(false)
   const [toast, setToast] = useState(null)
   const [supabase, setSupabase] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortField, setSortField] = useState(null)
+  const [sortDirection, setSortDirection] = useState('asc')
   const router = useRouter()
 
   useEffect(() => {
