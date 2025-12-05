@@ -24,7 +24,7 @@ export default function EditEmployee({ params }) {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        router.push('/admin/login')
+        router.push('/')
         return
       }
       fetchEmployee()
