@@ -66,13 +66,13 @@
 }
 
 @layer components {
-  /* Modern Light Buttons */
+  /* Brand Teal & Gold Buttons */
   .btn-primary {
-    @apply bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-200 shadow-sm;
+    @apply bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-200 shadow-sm;
   }
   
   .btn-secondary {
-    @apply bg-gradient-to-r from-[#8B7FF9] to-[#B57FF9] text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-200 shadow-sm;
+    @apply bg-gradient-to-r from-[#2AB8B8] to-[#3FCFCF] text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-200 shadow-sm;
   }
   
   .btn-danger {
@@ -80,11 +80,11 @@
   }
   
   .btn-outline {
-    @apply bg-white text-[#6C8EF9] border-2 border-[#E5EDFF] px-6 py-3 rounded-xl font-medium hover:bg-[#F7F9FC] transition-all duration-200 shadow-sm;
+    @apply bg-white text-[#1B9E9E] border-2 border-[#E5F5F5] px-6 py-3 rounded-xl font-medium hover:bg-[#F7FAFA] transition-all duration-200 shadow-sm;
   }
   
   .btn-accent {
-    @apply bg-gradient-to-r from-[#FBE122] to-[#FFD700] text-[#4A5568] px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-200 shadow-sm;
+    @apply bg-gradient-to-r from-[#C4B896] to-[#D1C7A8] text-[#4A5568] px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-200 shadow-sm;
   }
   
   /* Modern Light Cards */
@@ -94,7 +94,7 @@
   
   /* Modern Light Inputs */
   .input-material {
-    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#6C8EF9]/20 focus:border-[#6C8EF9] transition-all duration-200 bg-white;
+    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#1B9E9E]/20 focus:border-[#1B9E9E] transition-all duration-200 bg-white;
   }
   
   /* Modern Status Badges */
@@ -107,19 +107,19 @@
   }
   
   .badge-department {
-    @apply px-3 py-1.5 text-xs font-semibold rounded-full bg-[#8B7FF9]/10 text-[#8B7FF9] border border-[#8B7FF9]/20;
+    @apply px-3 py-1.5 text-xs font-semibold rounded-full bg-[#1B9E9E]/10 text-[#1B9E9E] border border-[#1B9E9E]/20;
   }
   
-  /* Modern Soft Shadows */
+  /* Modern Soft Shadows with Teal Tint */
   .elevation-2 {
-    box-shadow: 0 2px 8px rgba(108, 142, 249, 0.08);
+    box-shadow: 0 2px 8px rgba(27, 158, 158, 0.08);
   }
   
   .elevation-4 {
-    box-shadow: 0 4px 12px rgba(108, 142, 249, 0.12);
+    box-shadow: 0 4px 12px rgba(27, 158, 158, 0.12);
   }
   
   .elevation-8 {
-    box-shadow: 0 8px 24px rgba(108, 142, 249, 0.16);
+    box-shadow: 0 8px 24px rgba(27, 158, 158, 0.16);
   }
 }
