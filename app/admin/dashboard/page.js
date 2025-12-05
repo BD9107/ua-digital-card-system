@@ -101,7 +101,7 @@ export default function AdminDashboard() {
       })
       await response.json()
       fetchEmployees(supabase)
-      setToast({ message: 'Employee deleted successfully!', type: 'success' })
+      alert('Employee deleted successfully!')
     } catch (error) {
       console.error('Error deleting employee:', error)
     }
