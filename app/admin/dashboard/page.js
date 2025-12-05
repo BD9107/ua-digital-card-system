@@ -90,13 +90,15 @@ export default function AdminDashboard() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       
-      await fetch(`/api/employees/${id}`, {
+      const response = await fetch(`/api/employees/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${session?.access_token}`
         }
       })
+      await response.json()
       fetchEmployees(supabase)
+      setToast({ message: 'Employee deleted successfully!', type: 'success' })
     } catch (error) {
       console.error('Error deleting employee:', error)
     }
