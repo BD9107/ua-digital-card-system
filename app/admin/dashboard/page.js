@@ -23,7 +23,7 @@ export default function AdminDashboard() {
         const { data: { session } } = await supabaseClient.auth.getSession()
 
         if (!session) {
-          router.push('/admin/login')
+          router.push('/')
           return
         }
 
