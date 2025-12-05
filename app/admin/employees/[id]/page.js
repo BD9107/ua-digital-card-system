@@ -336,6 +336,30 @@ export default function EditEmployee({ params }) {
 
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
+            {/* Photo Upload */}
+            <div className="card-material">
+              <h3 className="text-lg font-semibold mb-4">Employee Photo</h3>
+              {formData?.photo_url && (
+                <div className="mb-4 text-center">
+                  <img 
+                    src={formData.photo_url} 
+                    alt="Employee" 
+                    className="w-32 h-32 object-cover rounded-lg mx-auto shadow-md"
+                  />
+                </div>
+              )}
+              <label className="block w-full text-center bg-[#0033AA] text-white px-4 py-3 rounded-lg hover:bg-[#002a8f] cursor-pointer transition-colors">
+                {uploading ? 'Uploading...' : formData?.photo_url ? 'Change Photo' : 'Upload Photo'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  disabled={uploading}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
             {/* QR Code */}
             <div className="card-material">
               <h3 className="text-lg font-semibold mb-4">QR Code</h3>
