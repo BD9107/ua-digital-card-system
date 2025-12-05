@@ -5,7 +5,6 @@ import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Switch } from '@/components/ui/switch'
-import Toast from '@/components/Toast'
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null)
