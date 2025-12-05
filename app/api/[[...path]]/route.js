@@ -408,8 +408,17 @@ export async function POST(request) {
         )
       }
       
+      // Get employee details to include name in filename
+      const { data: employee } = await supabase
+        .from('employees')
+        .select('first_name, last_name')
+        .eq('id', employeeId)
+        .single()
+      
       const fileBuffer = await file.arrayBuffer()
-      const fileName = `${employeeId}_${Date.now()}.${file.name.split('.').pop()}`
+      const employeeName = employee ? `${employee.first_name}_${employee.last_name}` : employeeId
+      const sanitizedName = employeeName.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase()
+      const fileName = `${sanitizedName}_${Date.now()}.${file.name.split('.').pop()}`
       
       const { data, error } = await supabase
         .storage
