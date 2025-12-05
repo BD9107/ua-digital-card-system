@@ -165,7 +165,7 @@ export async function GET(request) {
         width: 300,
         margin: 2,
         color: {
-          dark: '#003366',
+          dark: '#5A4FCF',
           light: '#FFFFFF'
         }
       })
