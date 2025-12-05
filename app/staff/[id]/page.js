@@ -289,8 +289,8 @@ export default function PublicProfile({ params }) {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6 text-white text-sm">
-          <p>Powered by UA Digital Card System</p>
+        <div className="text-center mt-8">
+          <p className="text-gray-600 text-sm font-medium">Powered by UA Digital Card System</p>
         </div>
       </div>
     </div>
