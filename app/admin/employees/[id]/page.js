@@ -152,9 +152,9 @@ export default function EditEmployee({ params }) {
 
       const result = await response.json()
       setFormData(prev => ({ ...prev, photo_url: result.url }))
-      setToast({ message: 'Photo uploaded successfully!', type: 'success' })
+      alert('Photo uploaded successfully!')
     } catch (error) {
-      setToast({ message: `Upload failed: ${error.message}`, type: 'error' })
+      alert(`Upload failed: ${error.message}`)
     } finally {
       setUploading(false)
     }
