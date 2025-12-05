@@ -18,7 +18,8 @@ export default function NewEmployee() {
     whatsapp: '',
     job_title: '',
     department: '',
-    website: ''
+    website: '',
+    company: ''
   })
   const router = useRouter()
   const supabase = createClient()
