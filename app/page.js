@@ -38,13 +38,13 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0033AA] to-[#0052d6]">
+    <div className="min-h-screen bg-gradient-to-br from-[#F7F9FC] via-[#EEF2FF] to-[#E0E7FF]">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto text-center">
           {/* Header */}
           <div className="mb-12">
-            <div className="w-20 h-20 bg-[#FBE122] rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg elevation-4">
-              <svg className="w-12 h-12 text-[#0033AA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-24 h-24 bg-gradient-to-br from-[#6C8EF9] to-[#8B7FF9] rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-xl">
+              <svg className="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
               </svg>
             </div>
