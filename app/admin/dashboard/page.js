@@ -296,6 +296,11 @@ export default function AdminDashboard() {
                       )}
                     </td>
                     <td className="px-6 py-5">
+                      {employee.job_title && (
+                        <div className="text-sm text-gray-900">{employee.job_title}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-5">
                       {employee.department && (
                         <span className="badge-department">{employee.department}</span>
                       )}
