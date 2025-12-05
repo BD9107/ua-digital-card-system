@@ -11,7 +11,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [employees, setEmployees] = useState([])
   const [importing, setImporting] = useState(false)
-  const [toast, setToast] = useState(null)
   const [supabase, setSupabase] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortField, setSortField] = useState(null)
