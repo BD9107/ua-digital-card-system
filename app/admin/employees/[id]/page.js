@@ -292,39 +292,27 @@ export default function EditEmployee({ params }) {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Company Name
+                  </label>
+                  <input
+                    type="text"
+                    name="company"
+                    value={formData?.company || ''}
+                    onChange={handleChange}
+                    placeholder="UA Company"
+                    className="input-material"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">This will appear on the vCard</p>
+                </div>
+
                 {/* Professional Links Section */}
                 <div className="border-t pt-6">
                   <ProfessionalLinksManager
                     initialLinks={professionalLinks}
                     onChange={setProfessionalLinks}
                   />
-                </div>
-
-                <div className="border-t pt-6">
-                  <label className="block text-gray-700 font-medium mb-3">
-                    Employee Photo
-                  </label>
-                  
-                  {formData?.photo_url && (
-                    <div className="mb-4">
-                      <img 
-                        src={formData.photo_url} 
-                        alt="Employee" 
-                        className="w-32 h-32 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
-
-                  <label className="inline-block bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 cursor-pointer">
-                    {uploading ? 'Uploading...' : 'Choose Photo'}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      disabled={uploading}
-                      className="hidden"
-                    />
-                  </label>
                 </div>
 
                 <div className="flex gap-4 pt-4">
