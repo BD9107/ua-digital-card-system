@@ -89,11 +89,11 @@ export default function HomePage() {
           <div className="space-y-4">
             <Link
               href="/admin/login"
-              className="inline-block bg-[#FBE122] text-[#0033AA] px-8 py-4 rounded-xl font-medium text-lg hover:bg-[#f5d900] transition-all duration-200 shadow-lg hover:shadow-xl elevation-4"
+              className="inline-block bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] text-white px-10 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-200 shadow-lg"
             >
               Admin Login
             </Link>
-            <p className="text-gray-300 text-sm">
+            <p className="text-gray-500 text-sm">
               Manage your team's digital business cards
             </p>
           </div>
