@@ -52,15 +52,15 @@ export default function PublicProfile({ params }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#003366] to-[#004488] flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-[#F7F9FC] via-[#EEF2FF] to-[#E0E7FF] flex items-center justify-center">
+        <div className="text-gray-700 text-xl">Loading...</div>
       </div>
     )
   }
 
   if (error || !employee) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#003366] to-[#004488] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#F7F9FC] via-[#EEF2FF] to-[#E0E7FF] flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl p-8 text-center max-w-md">
           <div className="w-16 h-16 bg-red-100 rounded-full mx-auto mb-4 flex items-center justify-center">
             <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
