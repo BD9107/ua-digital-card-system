@@ -6,46 +6,47 @@
 
 @layer base {
   :root {
-    /* UA Brand Colors */
-    --ua-blue: 223 100% 33%; /* #0033AA */
-    --ua-blue-light: 223 100% 45%;
-    --ua-blue-dark: 223 100% 25%;
-    --ua-yellow: 50 98% 56%; /* #FBE122 */
+    /* Modern Light Color Palette */
+    --primary-blue: 235 89% 70%; /* Soft blue #6C8EF9 */
+    --primary-blue-dark: 235 89% 60%; /* #5479F7 */
+    --primary-purple: 262 83% 70%; /* Soft purple #8B7FF9 */
+    --primary-pink: 340 82% 67%; /* Soft pink #F76EA1 */
+    --primary-cyan: 188 90% 65%; /* Soft cyan #5EC7E8 */
+    --primary-yellow: 45 96% 70%; /* Soft yellow #FBE122 */
     
     /* Base theme colors */
-    --background: 0 0% 100%;
-    --foreground: 210 40% 15%;
+    --background: 220 20% 97%; /* Very light blue-gray #F7F9FC */
+    --foreground: 220 20% 20%;
     --card: 0 0% 100%;
-    --card-foreground: 210 40% 15%;
+    --card-foreground: 220 20% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 40% 15%;
+    --popover-foreground: 220 20% 20%;
     
-    /* Primary = UA Blue */
-    --primary: 223 100% 33%;
+    /* Primary = Soft Blue */
+    --primary: 235 89% 70%;
     --primary-foreground: 0 0% 100%;
     
-    /* Secondary = Lighter UA Blue */
-    --secondary: 223 100% 45%;
+    /* Secondary = Soft Purple */
+    --secondary: 262 83% 70%;
     --secondary-foreground: 0 0% 100%;
     
-    --muted: 0 0% 96%;
-    --muted-foreground: 210 20% 40%;
+    --muted: 220 20% 95%;
+    --muted-foreground: 220 15% 50%;
     
-    /* Accent = UA Yellow (use sparingly) */
-    --accent: 50 98% 56%;
-    --accent-foreground: 223 100% 33%;
+    /* Accent = Soft Pink */
+    --accent: 340 82% 67%;
+    --accent-foreground: 0 0% 100%;
     
-    --destructive: 4 90% 58%;
+    --destructive: 4 90% 65%;
     --destructive-foreground: 0 0% 98%;
-    --border: 210 20% 90%;
-    --input: 210 20% 90%;
-    --ring: 223 100% 33%;
-    --radius: 0.75rem;
+    --border: 220 15% 90%;
+    --input: 220 15% 92%;
+    --ring: 235 89% 70%;
+    --radius: 1rem;
     
     /* Status colors */
-    --status-active: 122 39% 49%; /* Green #4caf50 */
-    --status-inactive: 0 0% 62%; /* Gray #9e9e9e */
-    --status-inactive-red: 4 90% 58%; /* Red #f44336 */
+    --status-active: 142 71% 45%; /* Modern green #22C55E */
+    --status-inactive: 220 15% 65%; /* Soft gray */
   }
 }
 
