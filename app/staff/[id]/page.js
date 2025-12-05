@@ -91,7 +91,7 @@ export default function PublicProfile({ params }) {
                 className="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg object-cover"
               />
             ) : (
-              <div className="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg bg-gradient-to-br from-[#6C8EF9] to-[#8B7FF9] flex items-center justify-center">
+              <div className="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg bg-gradient-to-br from-[#1B9E9E] to-[#2AB8B8] flex items-center justify-center">
                 <span className="text-4xl text-white font-semibold">
                   {employee.first_name[0]}{employee.last_name[0]}
                 </span>
