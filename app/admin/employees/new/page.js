@@ -237,7 +237,7 @@ export default function NewEmployee() {
                 name="company"
                 value={formData.company}
                 onChange={handleChange}
-                placeholder="UA Company"
+                placeholder="University of Aruba"
                 className="input-material"
               />
               <p className="text-xs text-gray-500 mt-1">This will appear on the vCard</p>
