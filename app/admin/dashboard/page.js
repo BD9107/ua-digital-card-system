@@ -174,7 +174,7 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] bg-clip-text text-transparent">Admin Dashboard</h1>
-              <p className="text-gray-500 mt-1 text-sm">Manage your team's digital cards</p>
+              <p className="text-gray-500 mt-1 text-sm">Manage your team&apos;s digital cards</p>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">{user?.email}</span>
