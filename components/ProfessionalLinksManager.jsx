@@ -85,7 +85,7 @@ export default function ProfessionalLinksManager({ initialLinks = [], onChange }
         <button
           type="button"
           onClick={handleAddLink}
-          className="bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all font-medium text-sm flex items-center gap-2"
+          className="bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all font-medium text-sm flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
