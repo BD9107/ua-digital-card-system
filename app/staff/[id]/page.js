@@ -79,8 +79,8 @@ export default function PublicProfile({ params }) {
       <div className="max-w-md mx-auto">
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-          {/* Header with modern gradient */}
-          <div className="bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] h-32"></div>
+          {/* Header with teal gradient */}
+          <div className="bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] h-32"></div>
           
           {/* Profile Photo */}
           <div className="relative -mt-16 mb-4 text-center">
