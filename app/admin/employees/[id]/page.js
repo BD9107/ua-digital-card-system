@@ -387,7 +387,7 @@ export default function EditEmployee({ params }) {
                   <a
                     href={qrCode}
                     download={`qr-${formData?.first_name}-${formData?.last_name}.png`}
-                    className="inline-block mt-4 text-[#6C8EF9] hover:text-[#5479F7] font-medium text-sm"
+                    className="inline-block mt-4 text-[#1B9E9E] hover:text-[#178888] font-medium text-sm"
                   >
                     Download QR Code
                   </a>
