@@ -366,7 +366,7 @@ export default function EditEmployee({ params }) {
                   />
                 </div>
               )}
-              <label className="block w-full text-center bg-[#0033AA] text-white px-4 py-3 rounded-lg hover:bg-[#002a8f] cursor-pointer transition-colors">
+              <label className="block w-full text-center bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] text-white px-4 py-3 rounded-xl hover:shadow-lg cursor-pointer transition-all font-semibold">
                 {uploading ? 'Uploading...' : formData?.photo_url ? 'Change Photo' : 'Upload Photo'}
                 <input
                   type="file"
