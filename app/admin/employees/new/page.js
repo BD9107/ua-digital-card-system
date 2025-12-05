@@ -166,7 +166,7 @@ export default function NewEmployee() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="+297-123-4567"
+                  placeholder="(+297) 555 5555"
                   className="input-material"
                 />
               </div>
