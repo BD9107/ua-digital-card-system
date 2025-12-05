@@ -34,9 +34,27 @@ export default function NewEmployee() {
     checkAuth()
   }, [])
 
+  const formatPhoneNumber = (value) => {
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, '')
+    
+    // Format to (+297) XXX XXXX
+    if (digits.length === 0) return ''
+    if (digits.length <= 3) return `(+${digits}`
+    if (digits.length <= 6) return `(+${digits.slice(0, 3)}) ${digits.slice(3)}`
+    return `(+${digits.slice(0, 3)}) ${digits.slice(3, 6)} ${digits.slice(6, 10)}`
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    
+    // Format phone and whatsapp numbers
+    if (name === 'phone' || name === 'whatsapp') {
+      const formatted = formatPhoneNumber(value)
+      setFormData(prev => ({ ...prev, [name]: formatted }))
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }))
+    }
   }
 
   const handleSubmit = async (e) => {
