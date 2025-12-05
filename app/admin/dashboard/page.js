@@ -266,7 +266,40 @@ export default function AdminDashboard() {
 
       {/* Employee List */}
       <div className="container mx-auto px-4 py-8">
-        {employees.length === 0 ? (
+        {(() => {
+          // Filter employees based on search query
+          let filteredEmployees = employees.filter(employee => {
+            if (!searchQuery) return true
+            const query = searchQuery.toLowerCase()
+            return (
+              employee.first_name?.toLowerCase().includes(query) ||
+              employee.last_name?.toLowerCase().includes(query) ||
+              employee.job_title?.toLowerCase().includes(query) ||
+              employee.department?.toLowerCase().includes(query)
+            )
+          })
+
+          // Sort employees
+          if (sortField) {
+            filteredEmployees = [...filteredEmployees].sort((a, b) => {
+              let aVal = a[sortField] || ''
+              let bVal = b[sortField] || ''
+              
+              // For name sorting, combine first and last name
+              if (sortField === 'name') {
+                aVal = `${a.first_name} ${a.last_name}`
+                bVal = `${b.first_name} ${b.last_name}`
+              }
+              
+              if (sortDirection === 'asc') {
+                return aVal.localeCompare(bVal)
+              } else {
+                return bVal.localeCompare(aVal)
+              }
+            })
+          }
+
+          return filteredEmployees.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
               <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
