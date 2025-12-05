@@ -6,47 +6,47 @@
 
 @layer base {
   :root {
-    /* Modern Light Color Palette */
-    --primary-blue: 235 89% 70%; /* Soft blue #6C8EF9 */
-    --primary-blue-dark: 235 89% 60%; /* #5479F7 */
-    --primary-purple: 262 83% 70%; /* Soft purple #8B7FF9 */
-    --primary-pink: 340 82% 67%; /* Soft pink #F76EA1 */
-    --primary-cyan: 188 90% 65%; /* Soft cyan #5EC7E8 */
-    --primary-yellow: 45 96% 70%; /* Soft yellow #FBE122 */
+    /* Brand Color Palette - Teal & Gold */
+    --primary-teal: 174 65% 41%; /* Teal #1B9E9E */
+    --primary-teal-light: 174 55% 50%; /* Lighter teal #2AB8B8 */
+    --primary-teal-dark: 174 70% 35%; /* Darker teal #178888 */
+    --accent-gold: 45 35% 68%; /* Gold/Beige #C4B896 */
+    --accent-gold-light: 45 40% 75%; /* Lighter gold #D1C7A8 */
+    --accent-gold-dark: 45 30% 60%; /* Darker gold #B5A77D */
     
     /* Base theme colors */
-    --background: 220 20% 97%; /* Very light blue-gray #F7F9FC */
-    --foreground: 220 20% 20%;
+    --background: 174 15% 97%; /* Very light teal-gray #F7FAFA */
+    --foreground: 174 20% 20%;
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 20%;
+    --card-foreground: 174 20% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 20%;
+    --popover-foreground: 174 20% 20%;
     
-    /* Primary = Soft Blue */
-    --primary: 235 89% 70%;
+    /* Primary = Teal */
+    --primary: 174 65% 41%;
     --primary-foreground: 0 0% 100%;
     
-    /* Secondary = Soft Purple */
-    --secondary: 262 83% 70%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary = Gold */
+    --secondary: 45 35% 68%;
+    --secondary-foreground: 174 20% 20%;
     
-    --muted: 220 20% 95%;
-    --muted-foreground: 220 15% 50%;
+    --muted: 174 15% 95%;
+    --muted-foreground: 174 15% 50%;
     
-    /* Accent = Soft Pink */
-    --accent: 340 82% 67%;
+    /* Accent = Teal Light */
+    --accent: 174 55% 50%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 4 90% 65%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 15% 90%;
-    --input: 220 15% 92%;
-    --ring: 235 89% 70%;
+    --border: 174 15% 90%;
+    --input: 174 15% 92%;
+    --ring: 174 65% 41%;
     --radius: 1rem;
     
     /* Status colors */
     --status-active: 142 71% 45%; /* Modern green #22C55E */
-    --status-inactive: 220 15% 65%; /* Soft gray */
+    --status-inactive: 174 15% 65%; /* Soft gray */
   }
 }
 
