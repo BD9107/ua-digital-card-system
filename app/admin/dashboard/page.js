@@ -123,10 +123,7 @@ export default function AdminDashboard() {
       
       if (response.ok) {
         fetchEmployees(supabase)
-        setToast({ 
-          message: `Employee ${!employee.is_active ? 'activated' : 'deactivated'} successfully!`, 
-          type: 'success' 
-        })
+        alert(`Employee ${!employee.is_active ? 'activated' : 'deactivated'} successfully!`)
       } else {
         throw new Error('Failed to update employee status')
       }
