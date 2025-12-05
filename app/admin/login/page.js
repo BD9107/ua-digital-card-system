@@ -110,6 +110,11 @@ export default function LoginPage() {
             <a href="/" className="text-[#6C8EF9] hover:text-[#5479F7] font-medium">← Back to Home</a>
           </div>
         </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8">
+          <p className="text-gray-500 text-sm font-medium">Powered by Blinding Media</p>
+        </div>
       </div>
     </div>
   )
