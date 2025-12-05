@@ -95,16 +95,16 @@ export default function NewEmployee() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#003366] text-white">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold">Add New Employee</h1>
-          <p className="text-gray-300 mt-1">Create a new digital card</p>
+    <div className="min-h-screen bg-[#F7F9FC]">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="container mx-auto px-6 py-5">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] bg-clip-text text-transparent">Add New Employee</h1>
+          <p className="text-gray-500 mt-1 text-sm">Create a new digital card</p>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow p-8">
+        <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
           {error && (
             <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
               {error}
