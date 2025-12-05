@@ -42,7 +42,7 @@ export default function AdminDashboard() {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (event, session) => {
           if (event === 'SIGNED_OUT') {
-            router.push('/admin/login')
+            router.push('/')
           }
         }
       )
