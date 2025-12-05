@@ -100,14 +100,14 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#002147] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#003366] disabled:bg-gray-400 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="w-full bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] text-white py-3.5 px-4 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <a href="/" className="text-[#003366] hover:underline">← Back to Home</a>
+          <div className="mt-6 text-center text-sm text-gray-500">
+            <a href="/" className="text-[#6C8EF9] hover:text-[#5479F7] font-medium">← Back to Home</a>
           </div>
         </div>
       </div>
