@@ -387,7 +387,7 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {employees.map((employee, index) => (
+                {filteredEmployees.map((employee, index) => (
                   <tr key={employee.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 1 ? 'bg-gray-50' : 'bg-white'} ${!employee.is_active ? 'opacity-60' : ''}`}>
                     <td className="px-6 py-5">
                       <div className="flex items-center">
