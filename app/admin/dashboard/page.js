@@ -481,7 +481,7 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
-        )})()}
+        })()}
       </div>
       {toast && (
         <Toast
