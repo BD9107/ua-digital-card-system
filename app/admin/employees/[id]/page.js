@@ -22,6 +22,10 @@ export default function EditEmployee({ params }) {
   const router = useRouter()
   const supabase = createClient()
 
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type })
+  }
+
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession()
