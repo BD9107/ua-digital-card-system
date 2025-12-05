@@ -118,7 +118,7 @@ export default function EditEmployee({ params }) {
         throw new Error(data.error || 'Failed to update employee')
       }
 
-      alert('Employee and links updated successfully!')
+      showToast('Employee and links updated successfully!')
       router.push('/admin/dashboard')
     } catch (error) {
       setError(error.message)
