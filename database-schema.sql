@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS employees (
   job_title TEXT,
   department TEXT,
   website TEXT,
+  company TEXT,
   photo_url TEXT,
   slug TEXT UNIQUE,
   is_active BOOLEAN DEFAULT true,
