@@ -180,7 +180,7 @@ export default function NewEmployee() {
                   name="whatsapp"
                   value={formData.whatsapp}
                   onChange={handleChange}
-                  placeholder="+297-123-4567"
+                  placeholder="(+297) 555 5555"
                   className="input-material"
                 />
               </div>
