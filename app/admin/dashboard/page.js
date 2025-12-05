@@ -78,7 +78,7 @@ export default function AdminDashboard() {
     if (supabase) {
       await supabase.auth.signOut()
     }
-    router.push('/admin/login')
+    router.push('/')
   }
 
   const handleDelete = async (id) => {
