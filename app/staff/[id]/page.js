@@ -75,12 +75,12 @@ export default function PublicProfile({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0033AA] to-[#0052d6] py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#F7F9FC] via-[#EEF2FF] to-[#E0E7FF] py-8 px-4">
       <div className="max-w-md mx-auto">
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden elevation-8">
-          {/* Header with UA Blue gradient */}
-          <div className="bg-gradient-to-r from-[#0033AA] to-[#0052d6] h-32"></div>
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* Header with modern gradient */}
+          <div className="bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] h-32"></div>
           
           {/* Profile Photo */}
           <div className="relative -mt-16 mb-4 text-center">
@@ -91,8 +91,8 @@ export default function PublicProfile({ params }) {
                 className="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg object-cover"
               />
             ) : (
-              <div className="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg bg-gradient-to-br from-[#0033AA] to-[#0052d6] flex items-center justify-center elevation-4">
-                <span className="text-4xl text-white font-medium">
+              <div className="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg bg-gradient-to-br from-[#6C8EF9] to-[#8B7FF9] flex items-center justify-center">
+                <span className="text-4xl text-white font-semibold">
                   {employee.first_name[0]}{employee.last_name[0]}
                 </span>
               </div>
