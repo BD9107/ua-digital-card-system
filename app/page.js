@@ -111,17 +111,65 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* CTA */}
-          <div className="space-y-4">
-            <Link
-              href="/admin/login"
-              className="inline-block bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] text-white px-10 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-200 shadow-lg"
-            >
-              Admin Login
-            </Link>
-            <p className="text-gray-500 text-sm">
-              Manage your team's digital business cards
-            </p>
+          {/* Login Form */}
+          <div className="max-w-md mx-auto">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+              <h2 className="text-2xl font-bold text-center mb-2 bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] bg-clip-text text-transparent">
+                Admin Login
+              </h2>
+              <p className="text-center text-gray-500 mb-6 text-sm">
+                Sign in to manage digital cards
+              </p>
+
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2 text-sm">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input-material"
+                    placeholder="admin@example.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2 text-sm">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input-material"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={signingIn}
+                  className="w-full bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] text-white py-3.5 px-4 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  {signingIn ? 'Signing in...' : 'Sign In'}
+                </button>
+              </form>
+            </div>
+
+            {/* Footer */}
+            <div className="text-center mt-8">
+              <p className="text-gray-500 text-sm font-medium">Powered by Blinding Media</p>
+            </div>
           </div>
         </div>
       </div>
