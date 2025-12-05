@@ -273,7 +273,7 @@ export default function AdminDashboard() {
                         {employee.photo_url ? (
                           <img src={employee.photo_url} alt="" className="h-12 w-12 rounded-full object-cover shadow-md elevation-2" />
                         ) : (
-                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#6C8EF9] to-[#8B7FF9] flex items-center justify-center shadow-sm">
+                          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#1B9E9E] to-[#2AB8B8] flex items-center justify-center shadow-sm">
                             <span className="text-white font-semibold text-lg">
                               {employee.first_name[0]}{employee.last_name[0]}
                             </span>
