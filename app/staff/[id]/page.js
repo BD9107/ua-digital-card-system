@@ -106,7 +106,7 @@ export default function PublicProfile({ params }) {
             </h1>
             
             {employee.job_title && (
-              <p className="text-center text-lg text-[#6C8EF9] font-semibold mb-1">
+              <p className="text-center text-lg text-[#1B9E9E] font-semibold mb-1">
                 {employee.job_title}
               </p>
             )}
