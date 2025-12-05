@@ -81,7 +81,7 @@ export default function HomePage() {
           {/* Login Form */}
           <div className="max-w-md mx-auto">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-              <h2 className="text-2xl font-bold text-center mb-2 bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold text-center mb-2 bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] bg-clip-text text-transparent">
                 Admin Login
               </h2>
               <p className="text-center text-gray-500 mb-6 text-sm">
