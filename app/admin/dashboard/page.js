@@ -346,7 +346,7 @@ export default function AdminDashboard() {
                         </div>
                         <button
                           onClick={() => handleDelete(employee.id)}
-                          className="p-2.5 text-[#f44336] hover:bg-red-50 rounded-xl transition-colors elevation-2"
+                          className="p-2.5 text-[#F76EA1] hover:bg-[#F76EA1]/10 rounded-xl transition-colors"
                           title="Delete employee"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
