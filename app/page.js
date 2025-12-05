@@ -126,7 +126,7 @@ export default function HomePage() {
                 <button
                   type="submit"
                   disabled={signingIn}
-                  className="w-full bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] text-white py-3.5 px-4 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="w-full bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white py-3.5 px-4 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {signingIn ? 'Signing in...' : 'Sign In'}
                 </button>
