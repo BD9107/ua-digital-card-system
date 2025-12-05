@@ -163,10 +163,10 @@ export default function AdminDashboard() {
       }
 
       const result = await response.json()
-      setToast({ message: `Successfully imported ${result.count} employees!`, type: 'success' })
+      alert(`Successfully imported ${result.count} employees!`)
       fetchEmployees(supabase)
     } catch (error) {
-      setToast({ message: `Import failed: ${error.message}`, type: 'error' })
+      alert(`Import failed: ${error.message}`)
     } finally {
       setImporting(false)
       e.target.value = ''
