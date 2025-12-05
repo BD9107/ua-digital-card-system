@@ -1,6 +1,6 @@
-first_name,last_name,email,phone,whatsapp,job_title,department,website,profile_photo_url
-John,Doe,john.doe@ua.aw,+297-123-4567,+297-123-4567,Software Engineer,IT,https://johndoe.com,
-Jane,Smith,jane.smith@ua.aw,+297-234-5678,+297-234-5678,Marketing Manager,Marketing,https://janesmith.com,
-Michael,Johnson,michael.johnson@ua.aw,+297-345-6789,+297-345-6789,Sales Director,Sales,,
-Emily,Davis,emily.davis@ua.aw,+297-456-7890,+297-456-7890,HR Manager,Human Resources,,
-David,Wilson,david.wilson@ua.aw,+297-567-8901,+297-567-8901,Finance Officer,Finance,,
+first_name,last_name,email,phone,whatsapp,job_title,department,website,company,profile_photo_url
+John,Doe,john.doe@ua.aw,(+297) 123 4567,(+297) 123 4567,Software Engineer,IT,https://johndoe.com,University of Aruba,
+Jane,Smith,jane.smith@ua.aw,(+297) 234 5678,(+297) 234 5678,Marketing Manager,Marketing,https://janesmith.com,University of Aruba,
+Michael,Johnson,michael.johnson@ua.aw,(+297) 345 6789,(+297) 345 6789,Sales Director,Sales,,University of Aruba,
+Emily,Davis,emily.davis@ua.aw,(+297) 456 7890,(+297) 456 7890,HR Manager,Human Resources,,University of Aruba,
+David,Wilson,david.wilson@ua.aw,(+297) 567 8901,(+297) 567 8901,Finance Officer,Finance,,University of Aruba,
