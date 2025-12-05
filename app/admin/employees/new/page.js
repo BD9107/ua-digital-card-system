@@ -210,6 +210,21 @@ export default function NewEmployee() {
               />
             </div>
 
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">
+                Company Name
+              </label>
+              <input
+                type="text"
+                name="company"
+                value={formData.company}
+                onChange={handleChange}
+                placeholder="UA Company"
+                className="input-material"
+              />
+              <p className="text-xs text-gray-500 mt-1">This will appear on the vCard</p>
+            </div>
+
             {/* Professional Links Section */}
             <div className="border-t pt-6">
               <ProfessionalLinksManager
