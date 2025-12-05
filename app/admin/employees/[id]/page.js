@@ -17,7 +17,6 @@ export default function EditEmployee({ params }) {
   const [formData, setFormData] = useState(null)
   const [professionalLinks, setProfessionalLinks] = useState([])
   const [qrCode, setQrCode] = useState(null)
-  const [toast, setToast] = useState(null)
   const router = useRouter()
   const supabase = createClient()
 
