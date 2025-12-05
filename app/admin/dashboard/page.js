@@ -129,7 +129,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error updating employee:', error)
-      setToast({ message: 'Failed to update employee status', type: 'error' })
+      alert('Failed to update employee status')
     }
   }
 
