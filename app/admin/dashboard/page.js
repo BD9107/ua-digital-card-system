@@ -362,7 +362,7 @@ export default function AdminDashboard() {
                     </div>
                   </th>
                   <th 
-                    className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors w-40"
                     onClick={() => {
                       if (sortField === 'department') {
                         setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
@@ -374,11 +374,9 @@ export default function AdminDashboard() {
                   >
                     <div className="flex items-center gap-2">
                       Department
-                      {sortField === 'department' && (
-                        <svg className={`w-4 h-4 transition-transform ${sortDirection === 'desc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                        </svg>
-                      )}
+                      <svg className={`w-4 h-4 transition-transform ${sortField === 'department' ? (sortDirection === 'desc' ? 'rotate-180' : '') : 'opacity-30'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
                     </div>
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
