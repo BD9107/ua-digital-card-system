@@ -278,7 +278,7 @@ export default function PublicProfile({ params }) {
             {/* Save Contact Button */}
             <button
               onClick={handleSaveContact}
-              className="w-full bg-gradient-to-r from-[#6C8EF9] to-[#8B7FF9] text-white py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
