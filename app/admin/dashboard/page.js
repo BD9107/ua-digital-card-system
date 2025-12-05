@@ -327,7 +327,7 @@ export default function AdminDashboard() {
                       <div className="flex items-center justify-end gap-3">
                         <Link
                           href={`/admin/employees/${employee.id}`}
-                          className="p-2.5 text-[#0033AA] hover:bg-blue-50 rounded-xl transition-colors elevation-2"
+                          className="p-2.5 text-[#6C8EF9] hover:bg-[#6C8EF9]/10 rounded-xl transition-colors"
                           title="Edit employee"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
