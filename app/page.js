@@ -7,6 +7,10 @@ import Link from 'next/link'
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true)
+  const [signingIn, setSigningIn] = useState(false)
+  const [error, setError] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -28,6 +32,28 @@ export default function HomePage() {
     
     checkAuth()
   }, [])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setSigningIn(true)
+
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) throw error
+
+      router.push('/admin/dashboard')
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setSigningIn(false)
+    }
+  }
 
   if (loading) {
     return (
