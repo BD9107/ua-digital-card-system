@@ -109,7 +109,7 @@ export default function AdminDashboard() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       
-      await fetch(`/api/employees/${employee.id}`, {
+      const response = await fetch(`/api/employees/${employee.id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -117,9 +117,19 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({ is_active: !employee.is_active })
       })
-      fetchEmployees(supabase)
+      
+      if (response.ok) {
+        fetchEmployees(supabase)
+        setToast({ 
+          message: `Employee ${!employee.is_active ? 'activated' : 'deactivated'} successfully!`, 
+          type: 'success' 
+        })
+      } else {
+        throw new Error('Failed to update employee status')
+      }
     } catch (error) {
       console.error('Error updating employee:', error)
+      setToast({ message: 'Failed to update employee status', type: 'error' })
     }
   }
 
