@@ -60,28 +60,28 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                 </svg>
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">QR Code Profiles</h3>
-              <p className="text-gray-200 text-sm">Instant access with QR codes</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">QR Code Profiles</h3>
+              <p className="text-gray-600">Instant access with QR codes</p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 elevation-4">
-              <div className="w-12 h-12 bg-[#FBE122] rounded-xl mx-auto mb-4 flex items-center justify-center shadow-md">
-                <svg className="w-6 h-6 text-[#0033AA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#8B7FF9] to-[#B57FF9] rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-md">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">Mobile First</h3>
-              <p className="text-gray-200 text-sm">Optimized for mobile devices</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Mobile First</h3>
+              <p className="text-gray-600">Optimized for mobile devices</p>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 elevation-4">
-              <div className="w-12 h-12 bg-[#FBE122] rounded-xl mx-auto mb-4 flex items-center justify-center shadow-md">
-                <svg className="w-6 h-6 text-[#0033AA]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#5EC7E8] to-[#6C8EF9] rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-md">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
               </div>
-              <h3 className="text-white font-semibold text-lg mb-2">Easy Contact Save</h3>
-              <p className="text-gray-200 text-sm">One-click vCard download</p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Easy Contact Save</h3>
+              <p className="text-gray-600">One-click vCard download</p>
             </div>
           </div>
 
