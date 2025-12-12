@@ -287,14 +287,19 @@ export async function GET(request) {
     
     // GET /api/admin-users/me - Get current user's admin profile
     if (segments[0] === 'admin-users' && segments[1] === 'me') {
+      // Query by email instead of UUID for RLS compatibility
+      const userEmail = authResult.user.email
+      console.log('Fetching admin user by email:', userEmail)
+      
       const { data, error } = await supabase
         .from('admin_users')
         .select('*')
-        .eq('id', authResult.user.id)
+        .eq('email', userEmail)
         .single()
       
       if (error) {
-        return NextResponse.json({ error: 'Admin user not found' }, { status: 404 })
+        console.error('Error fetching admin user:', error)
+        return NextResponse.json({ error: 'Admin user not found', details: error.message }, { status: 404 })
       }
       
       return NextResponse.json(data)
