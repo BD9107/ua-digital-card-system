@@ -174,17 +174,26 @@ export default function AdminUsersPage() {
     }
 
     try {
-      const { error } = await supabase
-        .from('admin_users')
-        .update({ role: newRole })
-        .eq('id', userId)
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch(`/api/admin-users/${userId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ role: newRole })
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update role')
+      }
+
       alert('Role updated successfully')
       fetchUsers()
     } catch (error) {
       console.error('Error updating role:', error)
-      alert('Failed to update role')
+      alert(`Failed to update role: ${error.message}`)
     }
   }
 
@@ -197,17 +206,24 @@ export default function AdminUsersPage() {
     if (!confirm('Are you sure you want to delete this admin user?')) return
 
     try {
-      const { error } = await supabase
-        .from('admin_users')
-        .delete()
-        .eq('id', userId)
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch(`/api/admin-users/${userId}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${session?.access_token}`
+        }
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete user')
+      }
+
       alert('Admin user deleted successfully')
       fetchUsers()
     } catch (error) {
       console.error('Error deleting user:', error)
-      alert('Failed to delete user')
+      alert(`Failed to delete user: ${error.message}`)
     }
   }
 
