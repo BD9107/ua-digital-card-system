@@ -378,11 +378,11 @@ export async function POST(request) {
     // POST /api/admin-users - Create new admin user (Overwatch only)
     // =====================================================
     if (segments[0] === 'admin-users' && segments.length === 1) {
-      // Check if current user is Overwatch
+      // Check if current user is Overwatch (by email)
       const { data: currentAdmin, error: adminError } = await supabase
         .from('admin_users')
         .select('role')
-        .eq('id', authResult.user.id)
+        .eq('email', authResult.user.email)
         .single()
       
       if (adminError || !currentAdmin || currentAdmin.role !== 'Overwatch') {
@@ -408,46 +408,45 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
       }
       
-      // First, create the user in Supabase Auth using admin API
-      // We need to use service role for this, but we can invite the user instead
-      // The user will receive an email to set their password
-      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email)
+      // Check if user already exists in admin_users
+      const { data: existingAdmin } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('email', email)
+        .single()
       
-      if (inviteError) {
-        // If user already exists in auth, try to get their ID
-        console.error('Invite error:', inviteError)
-        
-        // Check if the error is because user already exists
-        if (inviteError.message.includes('already') || inviteError.message.includes('exists')) {
-          // Try to get the user from admin_users to see if they're already an admin
-          const { data: existingAdmin } = await supabase
-            .from('admin_users')
-            .select('*')
-            .eq('email', email)
-            .single()
-          
-          if (existingAdmin) {
-            return NextResponse.json({ error: 'This email is already an admin user' }, { status: 409 })
-          }
-          
-          return NextResponse.json({ 
-            error: 'User exists in auth system. Please contact support to add them as admin.' 
-          }, { status: 409 })
-        }
-        
-        return NextResponse.json({ error: inviteError.message }, { status: 500 })
+      if (existingAdmin) {
+        return NextResponse.json({ error: 'This email is already an admin user' }, { status: 409 })
       }
       
+      // Generate a unique ID for the new admin user
+      // We'll use a UUID format that doesn't conflict with auth.users
+      const newUserId = crypto.randomUUID()
+      
       // Insert into admin_users table
+      // Note: The user will need to sign up separately via Supabase Auth
+      // or an existing auth user can be linked later
       const { data: newAdmin, error: insertError } = await supabase
         .from('admin_users')
         .insert([{
-          id: inviteData.user.id,
+          id: newUserId,
           email: email,
           role: role,
           status: status
         }])
         .select()
+        .single()
+      
+      if (insertError) {
+        console.error('Error inserting admin user:', insertError)
+        return NextResponse.json({ error: insertError.message }, { status: 500 })
+      }
+      
+      return NextResponse.json({ 
+        success: true, 
+        admin: newAdmin,
+        message: `Admin user created with status: ${status}. User will need to sign up or be linked to an auth account.`
+      })
         .single()
       
       if (insertError) {
