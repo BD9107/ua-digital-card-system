@@ -369,6 +369,206 @@ export async function POST(request) {
     }
     const { supabase } = authResult
 
+    // =====================================================
+    // POST /api/admin-users - Create new admin user (Overwatch only)
+    // =====================================================
+    if (segments[0] === 'admin-users' && segments.length === 1) {
+      // Check if current user is Overwatch
+      const { data: currentAdmin, error: adminError } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('id', authResult.user.id)
+        .single()
+      
+      if (adminError || !currentAdmin || currentAdmin.role !== 'Overwatch') {
+        return NextResponse.json({ error: 'Only Overwatch can create admin users' }, { status: 403 })
+      }
+      
+      const body = await request.json()
+      const { email, role, status = 'Pending' } = body
+      
+      if (!email || !role) {
+        return NextResponse.json({ error: 'Email and role are required' }, { status: 400 })
+      }
+      
+      // Validate role
+      const validRoles = ['Overwatch', 'Admin', 'Operator', 'Viewer']
+      if (!validRoles.includes(role)) {
+        return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+      }
+      
+      // Validate status
+      const validStatuses = ['Active', 'Inactive', 'Pending', 'Suspended']
+      if (!validStatuses.includes(status)) {
+        return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+      }
+      
+      // First, create the user in Supabase Auth using admin API
+      // We need to use service role for this, but we can invite the user instead
+      // The user will receive an email to set their password
+      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email)
+      
+      if (inviteError) {
+        // If user already exists in auth, try to get their ID
+        console.error('Invite error:', inviteError)
+        
+        // Check if the error is because user already exists
+        if (inviteError.message.includes('already') || inviteError.message.includes('exists')) {
+          // Try to get the user from admin_users to see if they're already an admin
+          const { data: existingAdmin } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('email', email)
+            .single()
+          
+          if (existingAdmin) {
+            return NextResponse.json({ error: 'This email is already an admin user' }, { status: 409 })
+          }
+          
+          return NextResponse.json({ 
+            error: 'User exists in auth system. Please contact support to add them as admin.' 
+          }, { status: 409 })
+        }
+        
+        return NextResponse.json({ error: inviteError.message }, { status: 500 })
+      }
+      
+      // Insert into admin_users table
+      const { data: newAdmin, error: insertError } = await supabase
+        .from('admin_users')
+        .insert([{
+          id: inviteData.user.id,
+          email: email,
+          role: role,
+          status: status
+        }])
+        .select()
+        .single()
+      
+      if (insertError) {
+        console.error('Error inserting admin user:', insertError)
+        return NextResponse.json({ error: insertError.message }, { status: 500 })
+      }
+      
+      return NextResponse.json({ 
+        success: true, 
+        admin: newAdmin,
+        message: `Admin user created with status: ${status}. ${status === 'Pending' ? 'Activate to send password reset email.' : ''}`
+      })
+    }
+    
+    // =====================================================
+    // POST /api/admin-users/bulk - Bulk operations (Overwatch only)
+    // =====================================================
+    if (segments[0] === 'admin-users' && segments[1] === 'bulk') {
+      // Check if current user is Overwatch
+      const { data: currentAdmin, error: adminError } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('id', authResult.user.id)
+        .single()
+      
+      if (adminError || !currentAdmin || currentAdmin.role !== 'Overwatch') {
+        return NextResponse.json({ error: 'Only Overwatch can perform bulk operations' }, { status: 403 })
+      }
+      
+      const body = await request.json()
+      const { action, ids, value } = body
+      
+      if (!action || !ids || !Array.isArray(ids) || ids.length === 0) {
+        return NextResponse.json({ error: 'Action and ids array are required' }, { status: 400 })
+      }
+      
+      if (action === 'update_role') {
+        const validRoles = ['Overwatch', 'Admin', 'Operator', 'Viewer']
+        if (!validRoles.includes(value)) {
+          return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+        }
+        
+        const { error } = await supabase
+          .from('admin_users')
+          .update({ role: value })
+          .in('id', ids)
+        
+        if (error) {
+          return NextResponse.json({ error: error.message }, { status: 500 })
+        }
+        
+        return NextResponse.json({ success: true, message: `Updated role to ${value} for ${ids.length} users` })
+      }
+      
+      if (action === 'update_status') {
+        const validStatuses = ['Active', 'Inactive', 'Pending', 'Suspended']
+        if (!validStatuses.includes(value)) {
+          return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+        }
+        
+        // If activating users, we need to send password reset emails
+        if (value === 'Active') {
+          // Get users that are being activated from Pending
+          const { data: pendingUsers } = await supabase
+            .from('admin_users')
+            .select('id, email, status')
+            .in('id', ids)
+            .eq('status', 'Pending')
+          
+          // Update status
+          const { error } = await supabase
+            .from('admin_users')
+            .update({ status: value })
+            .in('id', ids)
+          
+          if (error) {
+            return NextResponse.json({ error: error.message }, { status: 500 })
+          }
+          
+          // Send password reset emails to newly activated users
+          const emailsSent = []
+          for (const user of (pendingUsers || [])) {
+            try {
+              await supabase.auth.resetPasswordForEmail(user.email, {
+                redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/dashboard`
+              })
+              emailsSent.push(user.email)
+            } catch (e) {
+              console.error(`Failed to send reset email to ${user.email}:`, e)
+            }
+          }
+          
+          return NextResponse.json({ 
+            success: true, 
+            message: `Updated status to ${value} for ${ids.length} users. Password reset emails sent to: ${emailsSent.join(', ') || 'none'}`
+          })
+        }
+        
+        const { error } = await supabase
+          .from('admin_users')
+          .update({ status: value })
+          .in('id', ids)
+        
+        if (error) {
+          return NextResponse.json({ error: error.message }, { status: 500 })
+        }
+        
+        return NextResponse.json({ success: true, message: `Updated status to ${value} for ${ids.length} users` })
+      }
+      
+      if (action === 'delete') {
+        const { error } = await supabase
+          .from('admin_users')
+          .delete()
+          .in('id', ids)
+        
+        if (error) {
+          return NextResponse.json({ error: error.message }, { status: 500 })
+        }
+        
+        return NextResponse.json({ success: true, message: `Deleted ${ids.length} users` })
+      }
+      
+      return NextResponse.json({ error: 'Invalid bulk action' }, { status: 400 })
+    }
+
     // Create employee (with optional professional links)
     if (segments[0] === 'employees' && segments.length === 1) {
       const body = await request.json()
