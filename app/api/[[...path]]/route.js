@@ -447,29 +447,17 @@ export async function POST(request) {
         admin: newAdmin,
         message: `Admin user created with status: ${status}. User will need to sign up or be linked to an auth account.`
       })
-        .single()
-      
-      if (insertError) {
-        console.error('Error inserting admin user:', insertError)
-        return NextResponse.json({ error: insertError.message }, { status: 500 })
-      }
-      
-      return NextResponse.json({ 
-        success: true, 
-        admin: newAdmin,
-        message: `Admin user created with status: ${status}. ${status === 'Pending' ? 'Activate to send password reset email.' : ''}`
-      })
     }
     
     // =====================================================
     // POST /api/admin-users/bulk - Bulk operations (Overwatch only)
     // =====================================================
     if (segments[0] === 'admin-users' && segments[1] === 'bulk') {
-      // Check if current user is Overwatch
+      // Check if current user is Overwatch (by email)
       const { data: currentAdmin, error: adminError } = await supabase
         .from('admin_users')
         .select('role')
-        .eq('id', authResult.user.id)
+        .eq('email', authResult.user.email)
         .single()
       
       if (adminError || !currentAdmin || currentAdmin.role !== 'Overwatch') {
