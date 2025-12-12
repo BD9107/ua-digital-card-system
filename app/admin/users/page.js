@@ -1,8 +1,16 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export default function AdminUsersPage() {
   const [currentUser, setCurrentUser] = useState(null)
@@ -13,26 +21,14 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedUsers, setSelectedUsers] = useState([])
   const [showAddModal, setShowAddModal] = useState(false)
-  const [openMenuId, setOpenMenuId] = useState(null)
   const [showBulkMenu, setShowBulkMenu] = useState(false)
   const [page, setPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const router = useRouter()
   const supabase = createClient()
-  const menuRef = useRef(null)
 
   useEffect(() => {
     checkAuthAndFetch()
-    
-    // Close menus when clicking outside
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setOpenMenuId(null)
-        setShowBulkMenu(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const checkAuthAndFetch = async () => {
@@ -44,7 +40,6 @@ export default function AdminUsersPage() {
         return
       }
 
-      // Get current user's admin role via API
       const response = await fetch('/api/admin-users/me', {
         headers: {
           'Authorization': `Bearer ${session.access_token}`
@@ -171,7 +166,6 @@ export default function AdminUsersPage() {
 
       const result = await response.json()
       alert(result.message || 'Status updated successfully')
-      setOpenMenuId(null)
       fetchUsers()
     } catch (error) {
       console.error('Error updating status:', error)
@@ -202,7 +196,6 @@ export default function AdminUsersPage() {
       }
 
       alert('Role updated successfully')
-      setOpenMenuId(null)
       fetchUsers()
     } catch (error) {
       console.error('Error updating role:', error)
@@ -233,7 +226,6 @@ export default function AdminUsersPage() {
       }
 
       alert('Admin user deleted successfully')
-      setOpenMenuId(null)
       fetchUsers()
     } catch (error) {
       console.error('Error deleting user:', error)
@@ -241,7 +233,6 @@ export default function AdminUsersPage() {
     }
   }
 
-  // Bulk Operations
   const handleBulkAction = async (action, value) => {
     if (selectedUsers.length === 0) {
       alert('No users selected')
@@ -336,7 +327,7 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F9FC]" ref={menuRef}>
+    <div className="min-h-screen bg-[#F7F9FC]">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-6 py-5">
@@ -424,8 +415,11 @@ export default function AdminUsersPage() {
                   setRoleFilter('all')
                   setStatusFilter('all')
                 }}
-                className="px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors text-sm font-medium"
+                className="px-4 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors text-sm font-medium flex items-center gap-2"
               >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
                 Reset
               </button>
             </div>
@@ -433,54 +427,48 @@ export default function AdminUsersPage() {
             <div className="flex gap-3">
               {/* Bulk Actions (Overwatch only) */}
               {currentUser?.role === 'Overwatch' && selectedUsers.length > 0 && (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowBulkMenu(!showBulkMenu)}
-                    className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center gap-2"
-                  >
-                    <span>Bulk Actions ({selectedUsers.length})</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                  
-                  {showBulkMenu && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 z-20 py-2">
-                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Change Role</div>
-                      {['Overwatch', 'Admin', 'Operator', 'Viewer'].map(role => (
-                        <button
-                          key={role}
-                          onClick={() => handleBulkAction('update_role', role)}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-                        >
-                          {role}
-                        </button>
-                      ))}
-                      <div className="border-t border-gray-100 my-2"></div>
-                      <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Change Status</div>
-                      {['Active', 'Pending', 'Inactive', 'Suspended'].map(status => (
-                        <button
-                          key={status}
-                          onClick={() => handleBulkAction('update_status', status)}
-                          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                        >
-                          {status}
-                        </button>
-                      ))}
-                      <div className="border-t border-gray-100 my-2"></div>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Delete ${selectedUsers.length} users?`)) {
-                            handleBulkAction('delete')
-                          }
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                      >
-                        Delete Selected
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <DropdownMenu open={showBulkMenu} onOpenChange={setShowBulkMenu}>
+                  <DropdownMenuTrigger asChild>
+                    <button className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+                      </svg>
+                      <span>Bulk Actions ({selectedUsers.length})</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Change Role</DropdownMenuLabel>
+                    {['Overwatch', 'Admin', 'Operator', 'Viewer'].map(role => (
+                      <DropdownMenuItem key={role} onClick={() => handleBulkAction('update_role', role)}>
+                        {role}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                    {['Active', 'Pending', 'Inactive', 'Suspended'].map(status => (
+                      <DropdownMenuItem key={status} onClick={() => handleBulkAction('update_status', status)}>
+                        {status}
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        if (confirm(`Delete ${selectedUsers.length} users?`)) {
+                          handleBulkAction('delete')
+                        }
+                      }}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete Selected
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
 
               {/* Add User Button (Overwatch only) */}
@@ -490,7 +478,7 @@ export default function AdminUsersPage() {
                   className="bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white px-6 py-2.5 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                   </svg>
                   Add Admin User
                 </button>
@@ -502,20 +490,56 @@ export default function AdminUsersPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="text-2xl font-bold text-gray-900">{users.length}</div>
-            <div className="text-sm text-gray-500">Total Users</div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{users.length}</div>
+                <div className="text-sm text-gray-500">Total Users</div>
+              </div>
+            </div>
           </div>
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="text-2xl font-bold text-emerald-600">{users.filter(u => u.status === 'Active').length}</div>
-            <div className="text-sm text-gray-500">Active</div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-emerald-600">{users.filter(u => u.status === 'Active').length}</div>
+                <div className="text-sm text-gray-500">Active</div>
+              </div>
+            </div>
           </div>
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="text-2xl font-bold text-amber-600">{users.filter(u => u.status === 'Pending').length}</div>
-            <div className="text-sm text-gray-500">Pending</div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-amber-600">{users.filter(u => u.status === 'Pending').length}</div>
+                <div className="text-sm text-gray-500">Pending</div>
+              </div>
+            </div>
           </div>
           <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-            <div className="text-2xl font-bold text-red-600">{users.filter(u => u.status === 'Suspended').length}</div>
-            <div className="text-sm text-gray-500">Suspended</div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-red-600">{users.filter(u => u.status === 'Suspended').length}</div>
+                <div className="text-sm text-gray-500">Suspended</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -584,63 +608,82 @@ export default function AdminUsersPage() {
                     {getStatusBadge(user.status)}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="relative">
-                      <button 
-                        onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
-                        className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                      >
-                        <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                        </svg>
-                      </button>
-                      
-                      {openMenuId === user.id && (
-                        <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-200 z-20 py-2">
-                          {canEdit(user) && currentUser.role === 'Overwatch' && (
-                            <>
-                              <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Change Role</div>
-                              {['Overwatch', 'Admin', 'Operator', 'Viewer'].map(role => (
-                                <button
-                                  key={role}
-                                  onClick={() => handleUpdateRole(user.id, role)}
-                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${user.role === role ? 'text-[#1B9E9E] font-medium' : ''}`}
-                                >
-                                  {user.role === role && '✓ '}{role}
-                                </button>
-                              ))}
-                              <div className="border-t border-gray-100 my-2"></div>
-                            </>
-                          )}
-                          
-                          {canEdit(user) && (
-                            <>
-                              <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Change Status</div>
-                              {['Active', 'Pending', 'Inactive', 'Suspended'].map(status => (
-                                <button
-                                  key={status}
-                                  onClick={() => handleUpdateStatus(user.id, status)}
-                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 ${user.status === status ? 'text-[#1B9E9E] font-medium' : ''}`}
-                                >
-                                  {user.status === status && '✓ '}{status}
-                                </button>
-                              ))}
-                            </>
-                          )}
-                          
-                          {canDelete() && user.id !== currentUser.id && (
-                            <>
-                              <div className="border-t border-gray-100 my-2"></div>
-                              <button
-                                onClick={() => handleDelete(user.id)}
-                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+                          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                          </svg>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-52">
+                        {canEdit(user) && currentUser.role === 'Overwatch' && (
+                          <>
+                            <DropdownMenuLabel className="flex items-center gap-2">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                              </svg>
+                              Change Role
+                            </DropdownMenuLabel>
+                            {['Overwatch', 'Admin', 'Operator', 'Viewer'].map(role => (
+                              <DropdownMenuItem 
+                                key={role} 
+                                onClick={() => handleUpdateRole(user.id, role)}
+                                className={user.role === role ? 'text-[#1B9E9E] font-medium' : ''}
                               >
-                                Delete User
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                                {user.role === role && (
+                                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                                {role}
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        
+                        {canEdit(user) && (
+                          <>
+                            <DropdownMenuLabel className="flex items-center gap-2">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                              </svg>
+                              Change Status
+                            </DropdownMenuLabel>
+                            {['Active', 'Pending', 'Inactive', 'Suspended'].map(status => (
+                              <DropdownMenuItem 
+                                key={status} 
+                                onClick={() => handleUpdateStatus(user.id, status)}
+                                className={user.status === status ? 'text-[#1B9E9E] font-medium' : ''}
+                              >
+                                {user.status === status && (
+                                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                                {status}
+                              </DropdownMenuItem>
+                            ))}
+                          </>
+                        )}
+                        
+                        {canDelete() && user.id !== currentUser.id && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => handleDelete(user.id)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              Delete User
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               ))}
@@ -651,7 +694,7 @@ export default function AdminUsersPage() {
             <div className="text-center py-16">
               <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-700 mb-1">No admin users found</h3>
@@ -680,15 +723,18 @@ export default function AdminUsersPage() {
                 <option value={50}>50</option>
               </select>
               <span className="text-sm text-gray-500 ml-4">
-                Showing {((page - 1) * rowsPerPage) + 1}-{Math.min(page * rowsPerPage, getFilteredUsers().length)} of {getFilteredUsers().length}
+                Showing {Math.min(((page - 1) * rowsPerPage) + 1, getFilteredUsers().length)}-{Math.min(page * rowsPerPage, getFilteredUsers().length)} of {getFilteredUsers().length}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-1"
               >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
                 Previous
               </button>
               <span className="px-4 py-1.5 bg-[#1B9E9E] text-white rounded-lg text-sm font-medium">
@@ -697,9 +743,12 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-1"
               >
                 Next
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             </div>
           </div>
@@ -741,13 +790,25 @@ function AddUserModal({ onClose, onCreate }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
         <div className="bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] px-8 py-6">
-          <h2 className="text-2xl font-bold text-white">Add Admin User</h2>
-          <p className="text-white/80 text-sm mt-1">Create a new administrator account</p>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-white">Add Admin User</h2>
+              <p className="text-white/80 text-sm">Create a new administrator account</p>
+            </div>
+          </div>
         </div>
         
         <form onSubmit={handleSubmit} className="p-8">
           <div className="mb-5">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
               Email Address
             </label>
             <input
@@ -761,7 +822,10 @@ function AddUserModal({ onClose, onCreate }) {
           </div>
           
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+              </svg>
               Role
             </label>
             <select
@@ -794,16 +858,31 @@ function AddUserModal({ onClose, onCreate }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-medium flex items-center justify-center gap-2"
             >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+              className="flex-1 bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {loading ? 'Creating...' : 'Create User'}
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Create User
+                </>
+              )}
             </button>
           </div>
         </form>
