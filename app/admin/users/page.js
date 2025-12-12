@@ -111,9 +111,13 @@ export default function AdminUsersPage() {
 
     try {
       // Create user via API
-      const response = await fetch('/api/admin/users', {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch('/api/admin-users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({ email, role, status: 'Pending' })
       })
 
@@ -133,22 +137,25 @@ export default function AdminUsersPage() {
 
   const handleUpdateStatus = async (userId, newStatus) => {
     try {
-      const { error } = await supabase
-        .from('admin_users')
-        .update({ status: newStatus })
-        .eq('id', userId)
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch(`/api/admin-users/${userId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      })
 
-      if (error) throw error
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update status')
+      }
 
-      // If changing to Active, send invite email
-      if (newStatus === 'Active') {
-        const user = users.find(u => u.id === userId)
-        if (user) {
-          await supabase.auth.resetPasswordForEmail(user.email, {
-            redirectTo: `${window.location.origin}/admin/dashboard`
-          })
-          alert(`Status updated and invite email sent to ${user.email}`)
-        }
+      const result = await response.json()
+      
+      if (result.message) {
+        alert(result.message)
       } else {
         alert('Status updated successfully')
       }
@@ -156,7 +163,7 @@ export default function AdminUsersPage() {
       fetchUsers()
     } catch (error) {
       console.error('Error updating status:', error)
-      alert('Failed to update status')
+      alert(`Failed to update status: ${error.message}`)
     }
   }
 
