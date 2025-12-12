@@ -1,0 +1,191 @@
+<analysis>
+<original_problem_statement>
+
+We are continuing development of the “UA Digital Card System,” a full-stack Next.js + Supabase app for managing digital staff cards for the University of Aruba.
+
+The project is already restored to its last working state (branch: prototype-v1) and is functioning correctly in the Emergent preview environment.
+
+The current task in progress: **Implement a full Admin Users Management System** that introduces user roles, statuses, permissions, and a Vuexy-style admin interface.
+
+This includes:
+- Creating a new Supabase table: admin_users
+- Adding roles (Overwatch, Admin, Operator, Viewer)
+- Adding statuses (Active, Inactive, Pending, Suspended)
+- Implementing status-driven login rules
+- Enforcing strict RLS policies based on role and status
+- Creating a Vuexy-style management page at /admin/users
+- Adding backend CRUD + bulk endpoints
+- Enforcing role-based UI behavior
+- Sending password reset email only when an admin is activated
+
+</original_problem_statement>
+
+<User preferred language: English>
+
+
+────────────────────────────────────────
+📌 WHAT CURRENTLY EXISTS
+────────────────────────────────────────
+
+The UA Digital Card System is a full-stack Next.js 14 (App Router) application using Supabase for:
+- Authentication
+- PostgreSQL database
+- Storage for employee photos
+
+Major features already implemented:
+- Employee CRUD operations
+- QR code generation
+- vCard generation
+- Employee “Linktree-style” links manager
+- Admin dashboard with search + sort
+- Integrated login on homepage
+- Teal + gold custom UI theme
+- CSV import/export
+- Employee profile photo uploads
+- Working Supabase auth session detection
+- Working RLS for employee tables
+
+The project directory uses the required structure:
+/app          → project root
+/app/app      → Next.js App Router
+
+Do NOT modify this structure.
+
+Supabase is the ONLY backend. No MongoDB is used anywhere in this project.
+
+
+────────────────────────────────────────
+📌 LAST WORKING AGENT TASK (IN PROGRESS)
+────────────────────────────────────────
+
+Task: Build the **Admin Users Management System**.
+
+What has been completed:
+- SQL schema draft for admin_users table
+- RLS policy draft (needs correction due to naming issues)
+- Created new page: /app/app/admin/users/page.js (empty placeholder)
+- Prepared to add backend logic and helpers
+
+Where to resume:
+1. Finalize the admin_users table SQL + correct RLS policies
+2. Add API endpoints for admin-users in /app/app/api/[[...path]]/route.js
+3. Add backend helper functions in /app/lib/supabase-server.js
+4. Build the Vuexy-style user management UI on /admin/users
+5. Connect UI to backend and enforce permissions
+
+
+────────────────────────────────────────
+📌 THE ADMIN USERS SYSTEM (DETAILED SPEC)
+────────────────────────────────────────
+
+ROLES:
+- Overwatch → full system control (superadmin)
+- Admin → full employee management, limited admin visibility
+- Operator → limited employee management
+- Viewer → read-only, can only see their own row
+
+STATUSES:
+- Active → can log in
+- Pending → cannot log in; used for review before activation
+- Inactive → cannot log in; retained for internal visibility/history
+- Suspended → cannot log in; set after failed login lockout
+
+ACCOUNT FLOW:
+- Overwatch creates admin → status = Pending
+- Pending accounts are viewable internally but cannot log in
+- Overwatch edits or reviews details
+- When Overwatch sets status → Active:
+  → system sends Supabase password reset invitation
+- Role-based permissions restrict actions in UI + API
+- Suspended/Inactivated accounts remain visible but disabled
+
+ACCESS RULES:
+- Overwatch: full read/write
+- Admin: read-only for Overwatch accounts, limited updates for others
+- Operator: read-only
+- Viewer: read-only for their own row only
+
+UI REQUIREMENTS:
+Create a Vuexy-style admin table at /admin/users:
+- Search bar
+- Role filter dropdown
+- Status filter dropdown
+- Reset filters
+- Bulk actions: change role/status, delete (Overwatch only)
+- Row icon badges for role + status
+- Pagination
+- Striped rows + hover highlight
+- 3-dot menu for actions (View, Edit, Change Role, Change Status, Delete)
+
+BACKEND REQUIRED:
+Implement in route.js:
+- GET /api/admin-users
+- POST /api/admin-users (Overwatch only)
+- PUT /api/admin-users/[id]
+- DELETE /api/admin-users/[id]
+- Bulk update endpoints
+
+HELPERS REQUIRED (/lib/supabase-server.js):
+- getAdminUsers()
+- createAdminUser()
+- updateAdminRole()
+- updateAdminStatus()
+- deleteAdminUser()
+- bulkUpdateRoles()
+- bulkUpdateStatuses()
+- bulkDeleteAdmins()
+
+EMAIL LOGIC:
+Only send password reset email when:
+ → status transitions from Pending → Active
+
+
+────────────────────────────────────────
+📌 KNOWN ISSUES FROM PREVIOUS SESSION
+────────────────────────────────────────
+
+1. SQL policies failed because Emergent used quoted identifiers like:
+   DROP POLICY IF EXISTS Overwatch full access;
+   → Must be replaced with unquoted snake_case names.
+   Example:
+   DROP POLICY IF EXISTS overwatch_full_access;
+
+2. Custom toast notification system was abandoned and replaced with alert().
+   The Toast.jsx file is now unused.
+
+3. No testing agents were run; system is stable but not formally tested.
+
+
+────────────────────────────────────────
+📌 NEXT STEPS FOR THE AGENT
+────────────────────────────────────────
+
+1. Fix and finalize admin_users SQL + correct RLS policies.
+2. Implement backend CRUD + bulk endpoints for admin-users.
+3. Implement Supabase helper functions.
+4. Build the Vuexy-style /admin/users page UI with working permissions.
+5. Test backend and frontend integration.
+6. Ensure activation → sends password reset email.
+7. Ensure login is blocked for Pending, Inactive, and Suspended.
+
+
+────────────────────────────────────────
+📌 LOGIN CREDENTIALS FOR TESTING
+────────────────────────────────────────
+Email: tempadmin@blindingmedia.com
+Password: TempAdmin2025
+
+
+────────────────────────────────────────
+📌 PROJECT HEALTH
+────────────────────────────────────────
+- App runs perfectly in Emergent preview
+- No broken features
+- No external regressions
+- Admin Users feature is the only active task
+- System uses Supabase exclusively
+
+
+</End of Fork Summary>
+
+</analysis>
