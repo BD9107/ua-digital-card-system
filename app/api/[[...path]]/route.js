@@ -930,6 +930,42 @@ export async function DELETE(request) {
     }
     const { supabase } = authResult
 
+    // =====================================================
+    // DELETE /api/admin-users/[id] - Delete admin user (Overwatch only)
+    // =====================================================
+    if (segments[0] === 'admin-users' && segments[1]) {
+      const targetId = segments[1]
+      
+      // Check if current user is Overwatch
+      const { data: currentAdmin, error: adminError } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('id', authResult.user.id)
+        .single()
+      
+      if (adminError || !currentAdmin || currentAdmin.role !== 'Overwatch') {
+        return NextResponse.json({ error: 'Only Overwatch can delete admin users' }, { status: 403 })
+      }
+      
+      // Prevent self-deletion
+      if (targetId === authResult.user.id) {
+        return NextResponse.json({ error: 'You cannot delete your own account' }, { status: 400 })
+      }
+      
+      // Delete from admin_users table
+      const { error } = await supabase
+        .from('admin_users')
+        .delete()
+        .eq('id', targetId)
+      
+      if (error) {
+        console.error('Error deleting admin user:', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      
+      return NextResponse.json({ success: true, message: 'Admin user deleted successfully' })
+    }
+
     // Delete employee
     if (segments[0] === 'employees' && segments[1]) {
       const { error } = await supabase
