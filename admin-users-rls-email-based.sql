@@ -11,25 +11,20 @@ ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
 -- Step 2: Drop ALL existing policies on admin_users
+-- Using DO block to drop all policies dynamically
 -- =====================================================
--- Drop snake_case named policies
-DROP POLICY IF EXISTS overwatch_full_access ON admin_users;
-DROP POLICY IF EXISTS admin_read_access ON admin_users;
-DROP POLICY IF EXISTS admin_update_limited ON admin_users;
-DROP POLICY IF EXISTS operator_read_only ON admin_users;
-DROP POLICY IF EXISTS viewer_own_record ON admin_users;
-
--- Drop any quoted name policies (legacy)
-DROP POLICY IF EXISTS "overwatch_full_access" ON admin_users;
-DROP POLICY IF EXISTS "admin_read_access" ON admin_users;
-DROP POLICY IF EXISTS "admin_update_limited" ON admin_users;
-DROP POLICY IF EXISTS "operator_read_only" ON admin_users;
-DROP POLICY IF EXISTS "viewer_own_record" ON admin_users;
-DROP POLICY IF EXISTS "Overwatch full access" ON admin_users;
-DROP POLICY IF EXISTS "Admin read access" ON admin_users;
-DROP POLICY IF EXISTS "Admin update limited" ON admin_users;
-DROP POLICY IF EXISTS "Operator read only" ON admin_users;
-DROP POLICY IF EXISTS "Viewer own record" ON admin_users;
+DO $$
+DECLARE
+    pol RECORD;
+BEGIN
+    FOR pol IN 
+        SELECT policyname 
+        FROM pg_policies 
+        WHERE tablename = 'admin_users'
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON admin_users', pol.policyname);
+    END LOOP;
+END $$;
 
 -- =====================================================
 -- Step 3: Create helper function for email-based role check
@@ -38,7 +33,7 @@ CREATE OR REPLACE FUNCTION get_current_user_role_by_email()
 RETURNS text AS $$
   SELECT role 
   FROM admin_users 
-  WHERE email = auth.jwt()->>'email'
+  WHERE email = auth.jwt()->>$$email$$
   LIMIT 1;
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
@@ -54,15 +49,15 @@ CREATE POLICY overwatch_full_access ON admin_users
   USING (
     EXISTS (
       SELECT 1 FROM admin_users au 
-      WHERE au.email = auth.jwt()->>'email' 
-      AND au.role = 'Overwatch'
+      WHERE au.email = auth.jwt()->>$$email$$ 
+      AND au.role = $$Overwatch$$
     )
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM admin_users au 
-      WHERE au.email = auth.jwt()->>'email' 
-      AND au.role = 'Overwatch'
+      WHERE au.email = auth.jwt()->>$$email$$ 
+      AND au.role = $$Overwatch$$
     )
   );
 
@@ -74,8 +69,8 @@ CREATE POLICY admin_read_access ON admin_users
   USING (
     EXISTS (
       SELECT 1 FROM admin_users au 
-      WHERE au.email = auth.jwt()->>'email' 
-      AND au.role = 'Admin'
+      WHERE au.email = auth.jwt()->>$$email$$ 
+      AND au.role = $$Admin$$
     )
   );
 
@@ -86,8 +81,8 @@ CREATE POLICY operator_read_only ON admin_users
   USING (
     EXISTS (
       SELECT 1 FROM admin_users au 
-      WHERE au.email = auth.jwt()->>'email' 
-      AND au.role = 'Operator'
+      WHERE au.email = auth.jwt()->>$$email$$ 
+      AND au.role = $$Operator$$
     )
   );
 
@@ -96,11 +91,11 @@ CREATE POLICY viewer_own_record ON admin_users
   FOR SELECT
   TO authenticated
   USING (
-    email = auth.jwt()->>'email'
+    email = auth.jwt()->>$$email$$
     AND EXISTS (
       SELECT 1 FROM admin_users au 
-      WHERE au.email = auth.jwt()->>'email' 
-      AND au.role = 'Viewer'
+      WHERE au.email = auth.jwt()->>$$email$$ 
+      AND au.role = $$Viewer$$
     )
   );
 
@@ -111,7 +106,7 @@ CREATE OR REPLACE FUNCTION get_current_user_role()
 RETURNS text AS $$
   SELECT role 
   FROM admin_users 
-  WHERE email = auth.jwt()->>'email'
+  WHERE email = auth.jwt()->>$$email$$
   LIMIT 1;
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
@@ -119,7 +114,7 @@ CREATE OR REPLACE FUNCTION get_current_user_status()
 RETURNS text AS $$
   SELECT status 
   FROM admin_users 
-  WHERE email = auth.jwt()->>'email'
+  WHERE email = auth.jwt()->>$$email$$
   LIMIT 1;
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
@@ -129,18 +124,18 @@ $$ LANGUAGE sql SECURITY DEFINER STABLE;
 -- After running this script, the Overwatch user 
 -- (tempadmin@blindingmedia.com) will have full permissions
 -- as long as their record exists in admin_users with:
---   email = 'tempadmin@blindingmedia.com'
---   role = 'Overwatch'
---   status = 'Active'
+--   email = tempadmin@blindingmedia.com
+--   role = Overwatch
+--   status = Active
 --
 -- To verify the user exists:
--- SELECT * FROM admin_users WHERE email = 'tempadmin@blindingmedia.com';
+-- SELECT * FROM admin_users WHERE email = tempadmin@blindingmedia.com;
 --
--- If not, insert them:
+-- If not, insert them (run separately):
 -- INSERT INTO admin_users (id, email, role, status)
--- SELECT id, email, 'Overwatch', 'Active'
+-- SELECT id, email, Overwatch, Active
 -- FROM auth.users
--- WHERE email = 'tempadmin@blindingmedia.com';
+-- WHERE email = tempadmin@blindingmedia.com;
 -- =====================================================
 
 -- Display current policies for verification
@@ -152,4 +147,4 @@ SELECT
   roles,
   cmd
 FROM pg_policies 
-WHERE tablename = 'admin_users';
+WHERE tablename = $$admin_users$$;
