@@ -250,6 +250,71 @@ export async function GET(request) {
       })
     }
 
+    // =====================================================
+    // ADMIN USERS ENDPOINTS
+    // =====================================================
+    
+    // GET /api/admin-users - List all admin users (with role-based filtering)
+    if (segments[0] === 'admin-users' && segments.length === 1) {
+      const { data: currentAdmin, error: adminError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('id', authResult.user.id)
+        .single()
+      
+      if (adminError || !currentAdmin) {
+        return NextResponse.json({ error: 'You are not an admin user' }, { status: 403 })
+      }
+      
+      // Viewer can only see themselves
+      if (currentAdmin.role === 'Viewer') {
+        return NextResponse.json([currentAdmin])
+      }
+      
+      // Others can see all users (RLS will filter based on their role)
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error fetching admin users:', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      
+      return NextResponse.json(data || [])
+    }
+    
+    // GET /api/admin-users/me - Get current user's admin profile
+    if (segments[0] === 'admin-users' && segments[1] === 'me') {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('id', authResult.user.id)
+        .single()
+      
+      if (error) {
+        return NextResponse.json({ error: 'Admin user not found' }, { status: 404 })
+      }
+      
+      return NextResponse.json(data)
+    }
+    
+    // GET /api/admin-users/[id] - Get single admin user
+    if (segments[0] === 'admin-users' && segments[1]) {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('id', segments[1])
+        .single()
+      
+      if (error) {
+        return NextResponse.json({ error: 'Admin user not found' }, { status: 404 })
+      }
+      
+      return NextResponse.json(data)
+    }
+
     return NextResponse.json({ message: 'API is running' })
     
   } catch (error) {
