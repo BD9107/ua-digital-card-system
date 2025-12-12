@@ -4,9 +4,6 @@
 -- FIXED: Uses snake_case policy names (no quoted identifiers)
 -- =====================================================
 
--- Drop existing table if recreating (CAREFUL IN PRODUCTION!)
--- DROP TABLE IF EXISTS admin_users CASCADE;
-
 -- Create admin_users table
 CREATE TABLE IF NOT EXISTS admin_users (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -51,13 +48,6 @@ DROP POLICY IF EXISTS admin_read_access ON admin_users;
 DROP POLICY IF EXISTS admin_update_limited ON admin_users;
 DROP POLICY IF EXISTS operator_read_only ON admin_users;
 DROP POLICY IF EXISTS viewer_own_record ON admin_users;
-
--- Also drop old policies with quoted names if they exist
-DROP POLICY IF EXISTS "Overwatch full access" ON admin_users;
-DROP POLICY IF EXISTS "Admin read access" ON admin_users;
-DROP POLICY IF EXISTS "Admin update limited" ON admin_users;
-DROP POLICY IF EXISTS "Operator read only" ON admin_users;
-DROP POLICY IF EXISTS "Viewer own record" ON admin_users;
 
 -- OVERWATCH: Full access (SELECT, INSERT, UPDATE, DELETE)
 CREATE POLICY overwatch_full_access ON admin_users
@@ -118,23 +108,6 @@ CREATE TRIGGER trigger_update_admin_users_timestamp
   EXECUTE FUNCTION update_admin_users_timestamp();
 
 -- =====================================================
--- INITIAL SETUP: Create first Overwatch user
--- =====================================================
--- After your admin signs up via Supabase Auth, run this:
--- 
--- Step 1: Get the user's ID from auth.users
--- SELECT id, email FROM auth.users WHERE email = 'tempadmin@blindingmedia.com';
---
--- Step 2: Insert into admin_users with the ID from above
--- INSERT INTO admin_users (id, email, role, status)
--- VALUES (
---   'PASTE-THE-UUID-HERE',
---   'tempadmin@blindingmedia.com',
---   'Overwatch',
---   'Active'
--- );
-
--- =====================================================
 -- COMMENTS
 -- =====================================================
 COMMENT ON TABLE admin_users IS 'Admin users with role-based access control for UA Digital Card System';
@@ -142,3 +115,15 @@ COMMENT ON COLUMN admin_users.role IS 'Overwatch=full control, Admin=partial man
 COMMENT ON COLUMN admin_users.status IS 'Active=can login, Pending=awaiting activation, Inactive=disabled, Suspended=locked out';
 COMMENT ON FUNCTION get_current_user_role() IS 'Returns the role of the currently authenticated user';
 COMMENT ON FUNCTION get_current_user_status() IS 'Returns the status of the currently authenticated user';
+
+-- =====================================================
+-- INITIAL SETUP INSTRUCTIONS
+-- =====================================================
+-- After running this SQL, you need to add your first Overwatch user:
+--
+-- Step 1: Get your user ID from auth.users
+-- SELECT id, email FROM auth.users WHERE email = 'tempadmin@blindingmedia.com';
+--
+-- Step 2: Insert into admin_users (replace the UUID below)
+-- INSERT INTO admin_users (id, email, role, status)
+-- VALUES ('your-uuid-here', 'tempadmin@blindingmedia.com', 'Overwatch', 'Active');
