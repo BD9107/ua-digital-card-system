@@ -735,6 +735,113 @@ export async function PUT(request) {
     }
     const { supabase } = authResult
 
+    // =====================================================
+    // PUT /api/admin-users/[id] - Update admin user
+    // =====================================================
+    if (segments[0] === 'admin-users' && segments[1]) {
+      const targetId = segments[1]
+      const body = await request.json()
+      const { role, status, email } = body
+      
+      // Get current user's admin info
+      const { data: currentAdmin, error: adminError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('id', authResult.user.id)
+        .single()
+      
+      if (adminError || !currentAdmin) {
+        return NextResponse.json({ error: 'You are not an admin user' }, { status: 403 })
+      }
+      
+      // Get the target user's current data
+      const { data: targetUser, error: targetError } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('id', targetId)
+        .single()
+      
+      if (targetError || !targetUser) {
+        return NextResponse.json({ error: 'Admin user not found' }, { status: 404 })
+      }
+      
+      // Permission checks
+      if (currentAdmin.role === 'Viewer' || currentAdmin.role === 'Operator') {
+        return NextResponse.json({ error: 'You do not have permission to update admin users' }, { status: 403 })
+      }
+      
+      // Admin can only update non-Overwatch users and cannot change role/status
+      if (currentAdmin.role === 'Admin') {
+        if (targetUser.role === 'Overwatch') {
+          return NextResponse.json({ error: 'Admins cannot modify Overwatch users' }, { status: 403 })
+        }
+        if (role || status) {
+          return NextResponse.json({ error: 'Admins can only update email' }, { status: 403 })
+        }
+      }
+      
+      // Build update object
+      const updateData = {}
+      if (email) updateData.email = email
+      
+      // Only Overwatch can change role and status
+      if (currentAdmin.role === 'Overwatch') {
+        if (role) {
+          const validRoles = ['Overwatch', 'Admin', 'Operator', 'Viewer']
+          if (!validRoles.includes(role)) {
+            return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+          }
+          updateData.role = role
+        }
+        
+        if (status) {
+          const validStatuses = ['Active', 'Inactive', 'Pending', 'Suspended']
+          if (!validStatuses.includes(status)) {
+            return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+          }
+          updateData.status = status
+        }
+      }
+      
+      if (Object.keys(updateData).length === 0) {
+        return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+      }
+      
+      // Perform the update
+      const { data, error } = await supabase
+        .from('admin_users')
+        .update(updateData)
+        .eq('id', targetId)
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Error updating admin user:', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+      
+      // If status changed from Pending to Active, send password reset email
+      if (status === 'Active' && targetUser.status === 'Pending') {
+        try {
+          await supabase.auth.resetPasswordForEmail(targetUser.email, {
+            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/dashboard`
+          })
+          return NextResponse.json({ 
+            ...data, 
+            message: `User activated. Password reset email sent to ${targetUser.email}` 
+          })
+        } catch (emailError) {
+          console.error('Failed to send password reset email:', emailError)
+          return NextResponse.json({ 
+            ...data, 
+            warning: 'User activated but password reset email failed to send' 
+          })
+        }
+      }
+      
+      return NextResponse.json(data)
+    }
+
     // Update employee (with professional links)
     if (segments[0] === 'employees' && segments[1]) {
       const body = await request.json()
