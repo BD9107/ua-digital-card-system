@@ -23,7 +23,7 @@ export default function AdminUsersPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showBulkMenu, setShowBulkMenu] = useState(false)
   const [page, setPage] = useState(1)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [rowsPerPage, setRowsPerPage] = useState(50)
   const router = useRouter()
   const supabase = createClient()
 
