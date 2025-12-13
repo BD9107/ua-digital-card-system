@@ -468,11 +468,24 @@ export async function POST(request) {
               return NextResponse.json({ error: insertError.message }, { status: 500 })
             }
             
-            return NextResponse.json({ 
-              success: true, 
-              admin: newAdmin,
-              message: `Admin user created from existing account. Status: ${status}. ${status === 'Pending' ? 'Change to Active to send password reset email.' : ''}`
-            })
+            // Send password reset email to existing user
+            try {
+              await supabaseAdmin.auth.resetPasswordForEmail(email, {
+                redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
+              })
+              return NextResponse.json({ 
+                success: true, 
+                admin: newAdmin,
+                message: `Admin user created. Password reset email sent to ${email}.`
+              })
+            } catch (resetError) {
+              console.error('Password reset email error:', resetError)
+              return NextResponse.json({ 
+                success: true, 
+                admin: newAdmin,
+                message: `Admin user created. User can use "Forgot Password" to set up their account.`
+              })
+            }
           }
         }
         
