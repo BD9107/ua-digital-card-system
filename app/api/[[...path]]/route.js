@@ -438,7 +438,7 @@ export async function POST(request) {
       
       // Invite user via Supabase Auth (sends email with magic link)
       const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
+        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/confirm?next=/auth/callback`
       })
       
       if (inviteError) {
@@ -578,13 +578,13 @@ export async function POST(request) {
                 type: 'recovery',
                 email: user.email,
                 options: {
-                  redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
+                  redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/confirm?next=/auth/callback`
                 }
               })
               if (!resetError) {
                 // Also send the actual reset email
                 await supabaseAdmin.auth.resetPasswordForEmail(user.email, {
-                  redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
+                  redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/confirm?next=/auth/callback`
                 })
                 emailsSent.push(user.email)
               }
@@ -886,7 +886,7 @@ export async function PUT(request) {
       if (status === 'Active' && targetUser.status === 'Pending') {
         try {
           await supabaseAdmin.auth.resetPasswordForEmail(targetUser.email, {
-            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
+            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/confirm?next=/auth/callback`
           })
           return NextResponse.json({ 
             ...data, 
