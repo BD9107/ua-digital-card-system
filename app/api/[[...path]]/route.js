@@ -549,17 +549,19 @@ export async function POST(request) {
           return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
         }
         
+        const supabaseAdmin = createSupabaseAdmin()
+        
         // If activating users, we need to send password reset emails
         if (value === 'Active') {
           // Get users that are being activated from Pending
-          const { data: pendingUsers } = await supabase
+          const { data: pendingUsers } = await supabaseAdmin
             .from('admin_users')
             .select('id, email, status')
             .in('id', ids)
             .eq('status', 'Pending')
           
           // Update status
-          const { error } = await supabase
+          const { error } = await supabaseAdmin
             .from('admin_users')
             .update({ status: value })
             .in('id', ids)
@@ -568,14 +570,24 @@ export async function POST(request) {
             return NextResponse.json({ error: error.message }, { status: 500 })
           }
           
-          // Send password reset emails to newly activated users
+          // Send password reset emails to newly activated users using admin client
           const emailsSent = []
           for (const user of (pendingUsers || [])) {
             try {
-              await supabase.auth.resetPasswordForEmail(user.email, {
-                redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/dashboard`
+              const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+                type: 'recovery',
+                email: user.email,
+                options: {
+                  redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/dashboard`
+                }
               })
-              emailsSent.push(user.email)
+              if (!resetError) {
+                // Also send the actual reset email
+                await supabaseAdmin.auth.resetPasswordForEmail(user.email, {
+                  redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/dashboard`
+                })
+                emailsSent.push(user.email)
+              }
             } catch (e) {
               console.error(`Failed to send reset email to ${user.email}:`, e)
             }
@@ -587,7 +599,7 @@ export async function POST(request) {
           })
         }
         
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
           .from('admin_users')
           .update({ status: value })
           .in('id', ids)
@@ -600,7 +612,8 @@ export async function POST(request) {
       }
       
       if (action === 'delete') {
-        const { error } = await supabase
+        const supabaseAdmin = createSupabaseAdmin()
+        const { error } = await supabaseAdmin
           .from('admin_users')
           .delete()
           .in('id', ids)
