@@ -23,6 +23,16 @@ export default function AdminDashboard() {
   // Check if user has view-only access (non-Active status)
   const isViewOnly = adminUser && adminUser.status !== 'Active'
   const isOverwatch = adminUser && adminUser.role === 'Overwatch'
+  const isAdmin = adminUser && adminUser.role === 'Admin'
+  const isOperator = adminUser && adminUser.role === 'Operator'
+  const isViewer = adminUser && adminUser.role === 'Viewer'
+  
+  // Permission helpers for employee management
+  const canAddEmployee = !isViewOnly && !isViewer
+  const canEditEmployee = !isViewOnly && !isViewer
+  const canDeleteEmployee = !isViewOnly && isOverwatch
+  const canChangeEmployeeStatus = !isViewOnly && (isOverwatch || isAdmin)
+  const canAccessAdminUsers = isOverwatch || isAdmin
 
   useEffect(() => {
     if (initializedRef.current) return
