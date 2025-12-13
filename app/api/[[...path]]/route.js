@@ -1,8 +1,23 @@
 import { NextResponse } from 'next/server'
 import { createSupabaseServer } from '@/lib/supabase-server'
+import { createClient } from '@supabase/supabase-js'
 import QRCode from 'qrcode'
 import { generateVCard } from '@/lib/vcard'
 import Papa from 'papaparse'
+
+// Create Supabase Admin Client (with service role key)
+function createSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+}
 
 // Helper function for auth middleware
 async function authMiddleware(request) {
@@ -14,7 +29,6 @@ async function authMiddleware(request) {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7)
       // Create supabase client with the token
-      const { createClient } = await import('@supabase/supabase-js')
       supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
