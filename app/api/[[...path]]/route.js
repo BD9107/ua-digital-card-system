@@ -653,7 +653,20 @@ export async function POST(request) {
     }
 
     // Create employee (with optional professional links)
+    // Permissions: Overwatch, Admin, Operator can create. Viewer cannot.
     if (segments[0] === 'employees' && segments.length === 1) {
+      // Get current user's role
+      const { data: currentAdmin } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('email', authResult.user.email)
+        .single()
+      
+      // Check permissions - Viewer cannot create employees
+      if (!currentAdmin || currentAdmin.role === 'Viewer') {
+        return NextResponse.json({ error: 'Viewers do not have permission to add employees' }, { status: 403 })
+      }
+      
       const body = await request.json()
       
       // Extract professional_links if provided
@@ -701,7 +714,20 @@ export async function POST(request) {
     }
 
     // CSV Import
+    // Permissions: Overwatch, Admin, Operator can import. Viewer cannot.
     if (segments[0] === 'import' && segments[1] === 'csv') {
+      // Get current user's role
+      const { data: currentAdmin } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('email', authResult.user.email)
+        .single()
+      
+      // Check permissions - Viewer cannot import
+      if (!currentAdmin || currentAdmin.role === 'Viewer') {
+        return NextResponse.json({ error: 'Viewers do not have permission to import employees' }, { status: 403 })
+      }
+      
       const formData = await request.formData()
       const file = formData.get('file')
       
