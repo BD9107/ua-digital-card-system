@@ -61,6 +61,24 @@ export default function AdminDashboard() {
         
         if (adminResponse.ok) {
           const adminData = await adminResponse.json()
+          
+          // SECURITY CHECK: Block Suspended and Inactive users immediately
+          if (adminData.status === 'Suspended') {
+            // Sign out and redirect to login with suspended message
+            await supabaseClient.auth.signOut()
+            document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+            router.push('/?blocked=suspended')
+            return
+          }
+          
+          if (adminData.status === 'Inactive') {
+            // Sign out and redirect to login with inactive message
+            await supabaseClient.auth.signOut()
+            document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+            router.push('/?blocked=inactive')
+            return
+          }
+          
           setAdminUser(adminData)
           
           // If Overwatch or Admin, fetch pending users count
