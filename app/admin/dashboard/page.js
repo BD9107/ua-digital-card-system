@@ -82,18 +82,18 @@ export default function AdminDashboard() {
   }
 
   const handleSignOut = async () => {
-    if (supabase) {
-      await supabase.auth.signOut()
+    if (supabaseRef.current) {
+      await supabaseRef.current.auth.signOut()
     }
     router.push('/')
   }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this employee?')) return
-    if (!supabase) return
+    if (!supabaseRef.current) return
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabaseRef.current.auth.getSession()
       
       const response = await fetch(`/api/employees/${id}`, {
         method: 'DELETE',
@@ -102,7 +102,7 @@ export default function AdminDashboard() {
         }
       })
       await response.json()
-      fetchEmployees(supabase)
+      fetchEmployees()
       alert('Employee deleted successfully!')
     } catch (error) {
       console.error('Error deleting employee:', error)
@@ -110,9 +110,9 @@ export default function AdminDashboard() {
   }
 
   const handleToggleActive = async (employee) => {
-    if (!supabase) return
+    if (!supabaseRef.current) return
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabaseRef.current.auth.getSession()
       
       const response = await fetch(`/api/employees/${employee.id}`, {
         method: 'PUT',
@@ -124,7 +124,7 @@ export default function AdminDashboard() {
       })
       
       if (response.ok) {
-        fetchEmployees(supabase)
+        fetchEmployees()
         alert(`Employee ${!employee.is_active ? 'activated' : 'deactivated'} successfully!`)
       } else {
         throw new Error('Failed to update employee status')
@@ -137,13 +137,13 @@ export default function AdminDashboard() {
 
   const handleCSVImport = async (e) => {
     const file = e.target.files[0]
-    if (!file || !supabase) return
+    if (!file || !supabaseRef.current) return
 
     setImporting(true)
 
     try {
       // Get session token
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabaseRef.current.auth.getSession()
       
       const formData = new FormData()
       formData.append('file', file)
