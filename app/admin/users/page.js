@@ -510,8 +510,8 @@ export default function AdminUsersPage() {
             </div>
 
             <div className="flex gap-3">
-              {/* Bulk Actions (Overwatch only) */}
-              {currentUser?.role === 'Overwatch' && selectedUsers.length > 0 && (
+              {/* Bulk Actions (Overwatch and Admin) */}
+              {canBulkAction() && selectedUsers.length > 0 && (
                 <DropdownMenu open={showBulkMenu} onOpenChange={setShowBulkMenu}>
                   <DropdownMenuTrigger asChild>
                     <button className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center gap-2">
@@ -525,39 +525,49 @@ export default function AdminUsersPage() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                    {['Overwatch', 'Admin', 'Operator', 'Viewer'].map(role => (
-                      <DropdownMenuItem key={role} onClick={() => handleBulkAction('update_role', role)}>
-                        {role}
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
+                    {/* Only Overwatch can change roles */}
+                    {currentUser?.role === 'Overwatch' && (
+                      <>
+                        <DropdownMenuLabel>Change Role</DropdownMenuLabel>
+                        {['Overwatch', 'Admin', 'Operator', 'Viewer'].map(role => (
+                          <DropdownMenuItem key={role} onClick={() => handleBulkAction('update_role', role)}>
+                            {role}
+                          </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
                     <DropdownMenuLabel>Change Status</DropdownMenuLabel>
                     {['Active', 'Pending', 'Inactive', 'Suspended'].map(status => (
                       <DropdownMenuItem key={status} onClick={() => handleBulkAction('update_status', status)}>
                         {status}
                       </DropdownMenuItem>
                     ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        if (confirm(`Delete ${selectedUsers.length} users?`)) {
-                          handleBulkAction('delete')
-                        }
-                      }}
-                      className="text-red-600 focus:text-red-600"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Delete Selected
-                    </DropdownMenuItem>
+                    {/* Only Overwatch can delete */}
+                    {currentUser?.role === 'Overwatch' && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            if (confirm(`Delete ${selectedUsers.length} users?`)) {
+                              handleBulkAction('delete')
+                            }
+                          }}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Delete Selected
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
 
-              {/* Add User Button (Overwatch only) */}
-              {currentUser?.role === 'Overwatch' && (
+              {/* Add User Button (Overwatch and Admin) */}
+              {canCreate() && (
                 <button
                   onClick={() => setShowAddModal(true)}
                   className="bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white px-6 py-2.5 rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
