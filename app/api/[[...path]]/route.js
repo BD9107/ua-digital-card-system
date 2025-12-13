@@ -389,18 +389,20 @@ export async function POST(request) {
     const { supabase } = authResult
 
     // =====================================================
-    // POST /api/admin-users - Create new admin user (Overwatch only)
+    // POST /api/admin-users - Create new admin user (Overwatch or Admin)
+    // Role hierarchy: Overwatch > Admin > Operator > Viewer
     // =====================================================
     if (segments[0] === 'admin-users' && segments.length === 1) {
-      // Check if current user is Overwatch (by email)
+      // Check current user's role
       const { data: currentAdmin, error: adminError } = await supabase
         .from('admin_users')
         .select('role')
         .eq('email', authResult.user.email)
         .single()
       
-      if (adminError || !currentAdmin || currentAdmin.role !== 'Overwatch') {
-        return NextResponse.json({ error: 'Only Overwatch can create admin users' }, { status: 403 })
+      // Only Overwatch and Admin can create users
+      if (adminError || !currentAdmin || !['Overwatch', 'Admin'].includes(currentAdmin.role)) {
+        return NextResponse.json({ error: 'Only Overwatch and Admin can create admin users' }, { status: 403 })
       }
       
       const body = await request.json()
@@ -414,6 +416,11 @@ export async function POST(request) {
       const validRoles = ['Overwatch', 'Admin', 'Operator', 'Viewer']
       if (!validRoles.includes(role)) {
         return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+      }
+      
+      // Admin can only create Operator or Viewer roles
+      if (currentAdmin.role === 'Admin' && ['Overwatch', 'Admin'].includes(role)) {
+        return NextResponse.json({ error: 'Admins can only create Operator or Viewer users' }, { status: 403 })
       }
       
       // Validate status
