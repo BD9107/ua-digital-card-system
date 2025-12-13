@@ -34,6 +34,16 @@ function AuthCallbackContent() {
       
       setDebugInfo(`Processing authentication...`)
 
+      // Check for error in query params first (from /auth/confirm redirect)
+      const errorParam = searchParams.get('error')
+      const errorDescription = searchParams.get('error_description')
+      
+      if (errorParam) {
+        setError(errorDescription || errorParam)
+        setLoading(false)
+        return
+      }
+
       // Method 1: Check hash parameters (most common for Supabase)
       if (hash && hash.length > 1) {
         const hashParams = new URLSearchParams(hash.substring(1))
@@ -41,12 +51,12 @@ function AuthCallbackContent() {
         const refreshToken = hashParams.get('refresh_token')
         const type = hashParams.get('type')
         const errorCode = hashParams.get('error')
-        const errorDescription = hashParams.get('error_description')
+        const hashErrorDescription = hashParams.get('error_description')
 
         console.log('Hash params - type:', type, 'has access_token:', !!accessToken, 'error:', errorCode)
 
         if (errorCode) {
-          setError(errorDescription || errorCode || 'Authentication failed')
+          setError(hashErrorDescription || errorCode || 'Authentication failed')
           setLoading(false)
           return
         }
@@ -72,32 +82,7 @@ function AuthCallbackContent() {
         }
       }
 
-      // Method 2: Check query parameters (alternative format)
-      const token = searchParams.get('token')
-      const type = searchParams.get('type')
-      const code = searchParams.get('code')
-
-      console.log('Query params - token:', !!token, 'type:', type, 'code:', !!code)
-
-      // Handle PKCE flow (code exchange)
-      if (code) {
-        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-        
-        if (exchangeError) {
-          console.error('Code exchange error:', exchangeError)
-          setError(`Code exchange error: ${exchangeError.message}`)
-          setLoading(false)
-          return
-        }
-
-        if (data.user) {
-          setUserEmail(data.user.email || '')
-          setLoading(false)
-          return
-        }
-      }
-
-      // Method 3: Check if there's an existing session
+      // Method 2: Check if there's an existing session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
       if (sessionError) {
@@ -108,27 +93,6 @@ function AuthCallbackContent() {
         setUserEmail(session.user.email || '')
         setLoading(false)
         return
-      }
-
-      // Method 4: Try to verify OTP if token exists
-      if (token && type) {
-        const { data, error: verifyError } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: type === 'invite' ? 'invite' : type === 'recovery' ? 'recovery' : 'email'
-        })
-
-        if (verifyError) {
-          console.error('OTP verify error:', verifyError)
-          setError(`Verification error: ${verifyError.message}`)
-          setLoading(false)
-          return
-        }
-
-        if (data.user) {
-          setUserEmail(data.user.email || '')
-          setLoading(false)
-          return
-        }
       }
 
       // No valid auth found
