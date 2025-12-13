@@ -49,6 +49,24 @@ async function authMiddleware(request) {
         return { error: 'Unauthorized - Invalid token', status: 401 }
       }
       
+      // SECURITY CHECK: Verify user status in admin_users table
+      const supabaseAdmin = createSupabaseAdmin()
+      const { data: adminUser } = await supabaseAdmin
+        .from('admin_users')
+        .select('status')
+        .eq('email', user.email)
+        .single()
+      
+      if (adminUser?.status === 'Suspended') {
+        console.log('Blocked suspended user:', user.email)
+        return { error: 'ACCOUNT_SUSPENDED', status: 403, suspended: true }
+      }
+      
+      if (adminUser?.status === 'Inactive') {
+        console.log('Blocked inactive user:', user.email)
+        return { error: 'ACCOUNT_INACTIVE', status: 403, inactive: true }
+      }
+      
       console.log('Auth successful via token for user:', user.email)
       return { supabase, user }
     }
@@ -80,6 +98,24 @@ async function authMiddleware(request) {
     if (!user) {
       console.error('No user found')
       return { error: 'Unauthorized - No user', status: 401 }
+    }
+    
+    // SECURITY CHECK: Verify user status in admin_users table
+    const supabaseAdminForSession = createSupabaseAdmin()
+    const { data: adminUserSession } = await supabaseAdminForSession
+      .from('admin_users')
+      .select('status')
+      .eq('email', user.email)
+      .single()
+    
+    if (adminUserSession?.status === 'Suspended') {
+      console.log('Blocked suspended user:', user.email)
+      return { error: 'ACCOUNT_SUSPENDED', status: 403, suspended: true }
+    }
+    
+    if (adminUserSession?.status === 'Inactive') {
+      console.log('Blocked inactive user:', user.email)
+      return { error: 'ACCOUNT_INACTIVE', status: 403, inactive: true }
     }
     
     console.log('Auth successful via session for user:', user.email)
