@@ -9,8 +9,12 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [signingIn, setSigningIn] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [sendingReset, setSendingReset] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -55,6 +59,29 @@ export default function HomePage() {
     }
   }
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
+    setSendingReset(true)
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth/callback`
+      })
+
+      if (error) throw error
+
+      setSuccess(`Password reset email sent to ${resetEmail}. Please check your inbox.`)
+      setResetEmail('')
+    } catch (error) {
+      setError(error.message)
+    } finally {
+      setSendingReset(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F7F9FC] via-[#EEF2FF] to-[#E0E7FF]">
@@ -81,56 +108,134 @@ export default function HomePage() {
           {/* Login Form */}
           <div className="max-w-md mx-auto">
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-              <h2 className="text-2xl font-bold text-center mb-2 bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] bg-clip-text text-transparent">
-                Admin Login
-              </h2>
-              <p className="text-center text-gray-500 mb-6 text-sm">
-                Sign in to manage digital cards
-              </p>
+              {!showForgotPassword ? (
+                <>
+                  <h2 className="text-2xl font-bold text-center mb-2 bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] bg-clip-text text-transparent">
+                    Admin Login
+                  </h2>
+                  <p className="text-center text-gray-500 mb-6 text-sm">
+                    Sign in to manage digital cards
+                  </p>
 
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-                  {error}
-                </div>
+                  {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2 text-sm">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="input-material"
+                        placeholder="admin@example.com"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2 text-sm">
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="input-material"
+                        placeholder="••••••••"
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={signingIn}
+                      className="w-full bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white py-3.5 px-4 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    >
+                      {signingIn ? 'Signing in...' : 'Sign In'}
+                    </button>
+                  </form>
+
+                  <div className="mt-6 text-center">
+                    <button
+                      onClick={() => {
+                        setShowForgotPassword(true)
+                        setError('')
+                        setSuccess('')
+                      }}
+                      className="text-[#1B9E9E] hover:text-[#178585] text-sm font-medium transition-colors"
+                    >
+                      Forgot your password?
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold text-center mb-2 bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] bg-clip-text text-transparent">
+                    Reset Password
+                  </h2>
+                  <p className="text-center text-gray-500 mb-6 text-sm">
+                    Enter your email to receive a password reset link
+                  </p>
+
+                  {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm">
+                      {success}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div>
+                      <label className="block text-gray-700 font-medium mb-2 text-sm">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        className="input-material"
+                        placeholder="admin@example.com"
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={sendingReset}
+                      className="w-full bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white py-3.5 px-4 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    >
+                      {sendingReset ? 'Sending...' : 'Send Reset Link'}
+                    </button>
+                  </form>
+
+                  <div className="mt-6 text-center">
+                    <button
+                      onClick={() => {
+                        setShowForgotPassword(false)
+                        setError('')
+                        setSuccess('')
+                      }}
+                      className="text-[#1B9E9E] hover:text-[#178585] text-sm font-medium transition-colors flex items-center gap-2 mx-auto"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                      </svg>
+                      Back to Login
+                    </button>
+                  </div>
+                </>
               )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-gray-700 font-medium mb-2 text-sm">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input-material"
-                    placeholder="admin@example.com"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 font-medium mb-2 text-sm">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input-material"
-                    placeholder="••••••••"
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={signingIn}
-                  className="w-full bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] text-white py-3.5 px-4 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
-                  {signingIn ? 'Signing in...' : 'Sign In'}
-                </button>
-              </form>
             </div>
 
             {/* Footer */}
