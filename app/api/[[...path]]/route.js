@@ -250,20 +250,6 @@ export async function GET(request) {
       })
     }
 
-    // CSV Template Download (public)
-    if (segments[0] === 'csv-template') {
-      const csvHeader = 'first_name,last_name,email,phone,whatsapp,job_title,department,website,profile_photo_url'
-      const csvExample = 'John,Doe,john.doe@example.com,+1234567890,+1234567890,Software Engineer,Engineering,https://example.com,https://example.com/photo.jpg'
-      const csvContent = `${csvHeader}\n${csvExample}`
-      
-      return new NextResponse(csvContent, {
-        headers: {
-          'Content-Type': 'text/csv',
-          'Content-Disposition': 'attachment; filename="employee-import-template.csv"'
-        }
-      })
-    }
-
     // Protected routes - require authentication
     const authResult = await authMiddleware(request)
     if (authResult.error) {
