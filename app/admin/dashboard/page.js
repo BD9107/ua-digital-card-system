@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -11,17 +11,21 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [employees, setEmployees] = useState([])
   const [importing, setImporting] = useState(false)
-  const [supabase, setSupabase] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortField, setSortField] = useState(null)
   const [sortDirection, setSortDirection] = useState('asc')
   const router = useRouter()
+  const supabaseRef = useRef(null)
+  const initializedRef = useRef(false)
 
   useEffect(() => {
+    if (initializedRef.current) return
+    initializedRef.current = true
+
     const checkAuth = async () => {
       try {
         const supabaseClient = createClient()
-        setSupabase(supabaseClient)
+        supabaseRef.current = supabaseClient
         
         const { data: { session } } = await supabaseClient.auth.getSession()
 
@@ -33,6 +37,17 @@ export default function AdminDashboard() {
         setUser(session.user)
         setLoading(false)
         fetchEmployees(supabaseClient)
+
+        // Set up auth state listener
+        const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
+          (event, session) => {
+            if (event === 'SIGNED_OUT') {
+              router.push('/')
+            }
+          }
+        )
+
+        return () => subscription.unsubscribe()
       } catch (error) {
         console.error('Error initializing:', error)
         setLoading(false)
@@ -40,22 +55,11 @@ export default function AdminDashboard() {
     }
 
     checkAuth()
-
-    if (supabase) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (event, session) => {
-          if (event === 'SIGNED_OUT') {
-            router.push('/')
-          }
-        }
-      )
-
-      return () => subscription.unsubscribe()
-    }
-  }, [supabase])
+  }, [])
 
   const fetchEmployees = async (supabaseClient) => {
-    if (!supabaseClient) return
+    const client = supabaseClient || supabaseRef.current
+    if (!client) return
     try {
       // Get session token
       const { data: { session } } = await supabaseClient.auth.getSession()
