@@ -20,19 +20,42 @@ export default function AdminDashboard() {
   const supabaseRef = useRef(null)
   const initializedRef = useRef(false)
 
-  // Check if user has view-only access (non-Active status)
-  const isViewOnly = adminUser && adminUser.status !== 'Active'
+  // Check if user has view-only access (Pending status only - Suspended/Inactive should be blocked entirely)
+  const isViewOnly = adminUser && adminUser.status === 'Pending'
   const isOverwatch = adminUser && adminUser.role === 'Overwatch'
   const isAdmin = adminUser && adminUser.role === 'Admin'
   const isOperator = adminUser && adminUser.role === 'Operator'
   const isViewer = adminUser && adminUser.role === 'Viewer'
+  const isSuspended = adminUser && adminUser.status === 'Suspended'
+  const isInactive = adminUser && adminUser.status === 'Inactive'
   
   // Permission helpers for employee management
-  const canAddEmployee = !isViewOnly && !isViewer
-  const canEditEmployee = !isViewOnly && !isViewer
-  const canDeleteEmployee = !isViewOnly && isOverwatch
-  const canChangeEmployeeStatus = !isViewOnly && (isOverwatch || isAdmin)
-  const canAccessAdminUsers = isOverwatch || isAdmin
+  const canAddEmployee = !isViewOnly && !isViewer && !isSuspended && !isInactive
+  const canEditEmployee = !isViewOnly && !isViewer && !isSuspended && !isInactive
+  const canDeleteEmployee = !isViewOnly && isOverwatch && !isSuspended && !isInactive
+  const canChangeEmployeeStatus = !isViewOnly && (isOverwatch || isAdmin) && !isSuspended && !isInactive
+  const canAccessAdminUsers = (isOverwatch || isAdmin) && !isSuspended && !isInactive
+
+  // CRITICAL: Force redirect for suspended/inactive users
+  useEffect(() => {
+    if (isSuspended || isInactive) {
+      const forceSignOut = async () => {
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        // Clear all Supabase storage
+        if (typeof window !== 'undefined') {
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sb-') || key.includes('supabase')) {
+              localStorage.removeItem(key)
+            }
+          })
+        }
+        document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+        router.push(isSuspended ? '/?blocked=suspended' : '/?blocked=inactive')
+      }
+      forceSignOut()
+    }
+  }, [isSuspended, isInactive, router])
 
   useEffect(() => {
     if (initializedRef.current) return
