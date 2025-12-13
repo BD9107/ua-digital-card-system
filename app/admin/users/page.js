@@ -865,6 +865,7 @@ export default function AdminUsersPage() {
         <AddUserModal
           onClose={() => setShowAddModal(false)}
           onCreate={handleCreateUser}
+          currentUserRole={currentUser?.role}
         />
       )}
     </div>
