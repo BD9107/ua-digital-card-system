@@ -346,7 +346,8 @@ export async function GET(request) {
     if (segments[0] === 'admin-users' && segments[1] === 'me') {
       // Query by email instead of UUID for RLS compatibility
       const userEmail = authResult.user.email
-      console.log('Fetching admin user by email:', userEmail)
+      console.log('=== ADMIN-USERS/ME REQUEST ===')
+      console.log('User email:', userEmail)
       
       const { data, error } = await supabase
         .from('admin_users')
@@ -357,6 +358,27 @@ export async function GET(request) {
       if (error) {
         console.error('Error fetching admin user:', error)
         return NextResponse.json({ error: 'Admin user not found', details: error.message }, { status: 404 })
+      }
+      
+      console.log('Admin user status:', data?.status)
+      
+      // BLOCK SUSPENDED/INACTIVE users right here
+      if (data?.status === 'Suspended') {
+        console.log('BLOCKING SUSPENDED USER at /api/admin-users/me')
+        return NextResponse.json({ 
+          error: 'ACCOUNT_SUSPENDED', 
+          blocked: 'suspended',
+          message: 'Your account has been suspended'
+        }, { status: 403 })
+      }
+      
+      if (data?.status === 'Inactive') {
+        console.log('BLOCKING INACTIVE USER at /api/admin-users/me')
+        return NextResponse.json({ 
+          error: 'ACCOUNT_INACTIVE', 
+          blocked: 'inactive',
+          message: 'Your account is inactive'
+        }, { status: 403 })
       }
       
       return NextResponse.json(data)
