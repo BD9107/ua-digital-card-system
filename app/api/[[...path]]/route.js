@@ -433,17 +433,57 @@ export async function POST(request) {
         return NextResponse.json({ error: 'This email is already an admin user' }, { status: 409 })
       }
       
-      // Generate a unique ID for the new admin user
-      // We'll use a UUID format that doesn't conflict with auth.users
-      const newUserId = crypto.randomUUID()
+      // Use admin client to invite the user
+      const supabaseAdmin = createSupabaseAdmin()
       
-      // Insert into admin_users table
-      // Note: The user will need to sign up separately via Supabase Auth
-      // or an existing auth user can be linked later
-      const { data: newAdmin, error: insertError } = await supabase
+      // Invite user via Supabase Auth (sends email with magic link)
+      const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/dashboard`
+      })
+      
+      if (inviteError) {
+        console.error('Invite error:', inviteError)
+        
+        // Check if user already exists in auth
+        if (inviteError.message.includes('already') || inviteError.message.includes('exists') || inviteError.message.includes('registered')) {
+          // User exists in auth, get their ID
+          const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers()
+          const existingAuthUser = authUsers?.users?.find(u => u.email === email)
+          
+          if (existingAuthUser) {
+            // Insert into admin_users with existing auth ID
+            const { data: newAdmin, error: insertError } = await supabaseAdmin
+              .from('admin_users')
+              .insert([{
+                id: existingAuthUser.id,
+                email: email,
+                role: role,
+                status: status
+              }])
+              .select()
+              .single()
+            
+            if (insertError) {
+              console.error('Error inserting admin user:', insertError)
+              return NextResponse.json({ error: insertError.message }, { status: 500 })
+            }
+            
+            return NextResponse.json({ 
+              success: true, 
+              admin: newAdmin,
+              message: `Admin user created from existing account. Status: ${status}. ${status === 'Pending' ? 'Change to Active to send password reset email.' : ''}`
+            })
+          }
+        }
+        
+        return NextResponse.json({ error: inviteError.message }, { status: 500 })
+      }
+      
+      // Insert into admin_users table with the new auth user ID
+      const { data: newAdmin, error: insertError } = await supabaseAdmin
         .from('admin_users')
         .insert([{
-          id: newUserId,
+          id: inviteData.user.id,
           email: email,
           role: role,
           status: status
@@ -458,6 +498,9 @@ export async function POST(request) {
       
       return NextResponse.json({ 
         success: true, 
+        admin: newAdmin,
+        message: `Admin user created and invitation email sent to ${email}. Status: ${status}.`
+      }) 
         admin: newAdmin,
         message: `Admin user created with status: ${status}. User will need to sign up or be linked to an auth account.`
       })
