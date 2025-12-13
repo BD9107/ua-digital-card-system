@@ -341,12 +341,20 @@ export default function AdminUsersPage() {
   const getInitials = (email) => email.substring(0, 2).toUpperCase()
 
   const canEdit = (user) => {
+    if (!currentUser) return false
     if (currentUser.role === 'Overwatch') return true
-    if (currentUser.role === 'Admin' && user.role !== 'Overwatch') return true
+    // Admin can edit Operators and Viewers only
+    if (currentUser.role === 'Admin' && ['Operator', 'Viewer'].includes(user.role)) return true
     return false
   }
 
-  const canDelete = () => currentUser.role === 'Overwatch'
+  const canChangeRole = () => currentUser?.role === 'Overwatch'
+  
+  const canDelete = () => currentUser?.role === 'Overwatch'
+  
+  const canCreate = () => ['Overwatch', 'Admin'].includes(currentUser?.role)
+  
+  const canBulkAction = () => ['Overwatch', 'Admin'].includes(currentUser?.role)
 
   const totalPages = Math.ceil(getFilteredUsers().length / rowsPerPage) || 1
 
