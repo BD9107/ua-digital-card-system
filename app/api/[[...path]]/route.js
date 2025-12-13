@@ -921,12 +921,32 @@ export async function PUT(request) {
     }
 
     // Update employee (with professional links)
+    // Permissions: Overwatch, Admin, Operator can edit
+    // Only Overwatch and Admin can change is_active status
+    // Viewer cannot edit
     if (segments[0] === 'employees' && segments[1]) {
+      // Get current user's role
+      const { data: currentAdmin } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('email', authResult.user.email)
+        .single()
+      
+      // Check permissions
+      if (!currentAdmin || currentAdmin.role === 'Viewer') {
+        return NextResponse.json({ error: 'Viewers do not have permission to edit employees' }, { status: 403 })
+      }
+      
       const body = await request.json()
       const id = segments[1]
       
       // Extract professional_links if provided
       const { professional_links, ...employeeData } = body
+      
+      // Operator cannot change is_active status
+      if (currentAdmin.role === 'Operator' && 'is_active' in employeeData) {
+        return NextResponse.json({ error: 'Operators cannot change employee status. Contact an Admin or Overwatch.' }, { status: 403 })
+      }
       
       // Update slug if name changed
       if (employeeData.first_name || employeeData.last_name) {
