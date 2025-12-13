@@ -1,123 +1,58 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-
-// Clear ALL Supabase storage
-function clearAllSupabaseStorage() {
-  if (typeof window === 'undefined') return
-  
-  // Clear localStorage
-  Object.keys(localStorage).forEach(key => {
-    if (key.startsWith('sb-') || key.includes('supabase')) {
-      localStorage.removeItem(key)
-    }
-  })
-  
-  // Clear sessionStorage
-  Object.keys(sessionStorage).forEach(key => {
-    if (key.startsWith('sb-') || key.includes('supabase')) {
-      sessionStorage.removeItem(key)
-    }
-  })
-}
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [signingIn, setSigningIn] = useState(false)
   const [error, setError] = useState('')
-  const [errorType, setErrorType] = useState('')
   const [success, setSuccess] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [resetEmail, setResetEmail] = useState('')
   const [sendingReset, setSendingReset] = useState(false)
-  const [attemptsRemaining, setAttemptsRemaining] = useState(null)
-  const [contactInfo, setContactInfo] = useState(null)
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   useEffect(() => {
-    // ALWAYS clear old sessions when landing on login page
-    clearAllSupabaseStorage()
-    
-    // Check URL params for messages
-    const expired = searchParams.get('expired')
-    const blocked = searchParams.get('blocked')
-    
-    if (expired === 'true') {
-      setError('Your session has expired. Please sign in again.')
-      setErrorType('SESSION_EXPIRED')
+    const checkAuth = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session) {
+          router.push('/admin/dashboard')
+        } else {
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Error:', error)
+        setLoading(false)
+      }
     }
     
-    if (blocked === 'suspended') {
-      setErrorType('SUSPENDED')
-      setError('Your account has been suspended.')
-      setContactInfo({
-        message: 'Contact your Overwatch administrator to restore access.',
-        action: 'An Overwatch user must manually change your status back to Active.'
-      })
-    } else if (blocked === 'inactive') {
-      setErrorType('INACTIVE')
-      setError('Your account is currently inactive. Contact an administrator to reactivate.')
-    }
-    
-    // Always show login page - no auto-redirect
-    setLoading(false)
-  }, [searchParams])
+    checkAuth()
+  }, [router])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    setErrorType('')
-    setAttemptsRemaining(null)
-    setContactInfo(null)
     setSigningIn(true)
 
     try {
-      // Call our secure login endpoint
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        // Handle errors
-        if (data.error === 'SUSPENDED') {
-          setErrorType('SUSPENDED')
-          setError(data.message)
-          setContactInfo(data.contact_info)
-        } else if (data.error === 'INACTIVE') {
-          setErrorType('INACTIVE')
-          setError(data.message)
-        } else {
-          setErrorType('INVALID')
-          setError(data.error || 'Invalid credentials')
-          if (data.attempts_remaining !== undefined) {
-            setAttemptsRemaining(data.attempts_remaining)
-          }
-        }
-        return
-      }
-      
-      // Login successful - set session and redirect
       const supabase = createClient()
-      if (data.session) {
-        await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token
-        })
-      }
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) throw error
       
       router.push('/admin/dashboard')
     } catch (error) {
-      setError('An error occurred. Please try again.')
-      console.error('Login error:', error)
+      setError(error.message)
     } finally {
       setSigningIn(false)
     }
@@ -181,79 +116,7 @@ export default function HomePage() {
                     Sign in to manage digital cards
                   </p>
 
-                  {/* Suspended Account Error */}
-                  {errorType === 'SUSPENDED' && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                      <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                        </svg>
-                        <div className="text-left">
-                          <div className="text-sm font-semibold text-red-800">Account Suspended</div>
-                          <div className="text-xs text-red-700 mt-1">{error}</div>
-                          {contactInfo && (
-                            <div className="mt-3 p-3 bg-white rounded-lg border border-red-100">
-                              <div className="text-xs font-medium text-gray-800 mb-1">How to restore access:</div>
-                              <div className="text-xs text-gray-600">{contactInfo.message}</div>
-                              <div className="text-xs text-gray-500 mt-2 italic">{contactInfo.action}</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Inactive Account Error */}
-                  {errorType === 'INACTIVE' && (
-                    <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                      <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                        </svg>
-                        <div className="text-left">
-                          <div className="text-sm font-medium text-gray-800">Account Inactive</div>
-                          <div className="text-xs text-gray-600 mt-1">{error}</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Session Expired */}
-                  {errorType === 'SESSION_EXPIRED' && (
-                    <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                      <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div className="text-left">
-                          <div className="text-sm font-medium text-amber-800">Session Expired</div>
-                          <div className="text-xs text-amber-700 mt-1">{error}</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Invalid Credentials Error */}
-                  {errorType === 'INVALID' && error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-                      <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        <div>
-                          <div>{error}</div>
-                          {attemptsRemaining !== null && attemptsRemaining > 0 && (
-                            <div className="text-xs mt-1 text-red-600 font-medium">
-                              Warning: {attemptsRemaining} attempt{attemptsRemaining !== 1 ? 's' : ''} remaining before account lockout
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Generic error */}
-                  {!errorType && error && (
+                  {error && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
                       {error}
                     </div>
@@ -298,7 +161,6 @@ export default function HomePage() {
                       onClick={() => {
                         setShowForgotPassword(true)
                         setError('')
-                        setErrorType('')
                         setSuccess('')
                       }}
                       className="text-[#1B9E9E] hover:text-[#178585] text-sm font-medium transition-colors"
