@@ -1021,9 +1021,44 @@ export async function POST(request) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
       
+      // Process professional links for each employee
+      const linkTypes = ['linkedin', 'twitter', 'facebook', 'instagram', 'github', 'youtube']
+      const allLinks = []
+      
+      result.data.forEach((row, index) => {
+        const employeeId = data[index]?.id
+        if (!employeeId) return
+        
+        linkTypes.forEach((linkType, sortOrder) => {
+          const url = row[linkType]
+          if (url && url.trim()) {
+            allLinks.push({
+              employee_id: employeeId,
+              label: linkType.charAt(0).toUpperCase() + linkType.slice(1),
+              url: url.startsWith('http') ? url : `https://${url}`,
+              icon_type: linkType,
+              sort_order: sortOrder,
+              is_active: true
+            })
+          }
+        })
+      })
+      
+      // Insert all links if any exist
+      if (allLinks.length > 0) {
+        const { error: linksError } = await supabase
+          .from('employee_links')
+          .insert(allLinks)
+        
+        if (linksError) {
+          console.error('Error creating links during CSV import:', linksError)
+        }
+      }
+      
       return NextResponse.json({ 
         success: true, 
         count: data.length,
+        linksCount: allLinks.length,
         employees: data 
       })
     }
