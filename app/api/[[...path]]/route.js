@@ -1105,6 +1105,14 @@ export async function PUT(request) {
         return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
       }
       
+      // If activating a suspended user, also reset their failed login attempts
+      if (status === 'Active' && targetUser.status === 'Suspended') {
+        updateData.failed_login_attempts = 0
+        updateData.first_failed_login_at = null
+        updateData.last_failed_login_at = null
+        updateData.lockout_reason = null
+      }
+      
       // Perform the update using admin client
       const { data, error } = await supabaseAdmin
         .from('admin_users')
@@ -1118,8 +1126,14 @@ export async function PUT(request) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
       
-      // If status changed from Pending to Active, just confirm activation
-      // No password reset email needed - user already set password during initial invite
+      // Custom messages for different status transitions
+      if (status === 'Active' && targetUser.status === 'Suspended') {
+        return NextResponse.json({ 
+          ...data, 
+          message: `User ${targetUser.email} has been reactivated. Failed login attempts have been reset.` 
+        })
+      }
+      
       if (status === 'Active' && targetUser.status === 'Pending') {
         return NextResponse.json({ 
           ...data, 
