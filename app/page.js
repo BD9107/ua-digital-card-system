@@ -49,7 +49,73 @@ export default function HomePage() {
         
         // Don't auto-redirect if user was just blocked
         if (session && !blocked) {
-          router.push('/admin/dashboard')
+          // SECURITY CHECK: Verify user status before auto-redirect
+          try {
+            const statusResponse = await fetch('/api/admin-users/me', {
+              headers: {
+                'Authorization': `Bearer ${session.access_token}`
+              }
+            })
+            
+            // Check for blocked status from API
+            if (statusResponse.status === 403) {
+              const errorData = await statusResponse.json()
+              // Sign out and show appropriate message
+              await supabase.auth.signOut()
+              document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+              
+              if (errorData.blocked === 'suspended' || errorData.error === 'ACCOUNT_SUSPENDED') {
+                setErrorType('SUSPENDED')
+                setError('Your account has been suspended.')
+                setContactInfo({
+                  message: 'Contact your Overwatch administrator to restore access.',
+                  action: 'An Overwatch user must manually change your status back to Active.'
+                })
+              } else if (errorData.blocked === 'inactive' || errorData.error === 'ACCOUNT_INACTIVE') {
+                setErrorType('INACTIVE')
+                setError('Your account is currently inactive. Contact an administrator to reactivate.')
+              }
+              setLoading(false)
+              return
+            }
+            
+            if (statusResponse.ok) {
+              const adminUser = await statusResponse.json()
+              
+              // Double-check status from response data
+              if (adminUser.status === 'Suspended') {
+                await supabase.auth.signOut()
+                document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+                setErrorType('SUSPENDED')
+                setError('Your account has been suspended.')
+                setContactInfo({
+                  message: 'Contact your Overwatch administrator to restore access.',
+                  action: 'An Overwatch user must manually change your status back to Active.'
+                })
+                setLoading(false)
+                return
+              }
+              
+              if (adminUser.status === 'Inactive') {
+                await supabase.auth.signOut()
+                document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+                setErrorType('INACTIVE')
+                setError('Your account is currently inactive. Contact an administrator to reactivate.')
+                setLoading(false)
+                return
+              }
+              
+              // User is valid - redirect to dashboard
+              router.push('/admin/dashboard')
+            } else {
+              // API error - still redirect to dashboard, let dashboard handle it
+              router.push('/admin/dashboard')
+            }
+          } catch (apiError) {
+            console.error('Error checking user status:', apiError)
+            // On error, still redirect - dashboard will handle auth
+            router.push('/admin/dashboard')
+          }
         } else {
           setLoading(false)
         }
