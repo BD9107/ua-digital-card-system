@@ -246,8 +246,9 @@ export default function AdminUsersPage() {
       return
     }
 
-    if (currentUser.role !== 'Overwatch') {
-      alert('Only Overwatch can perform bulk operations')
+    // Both Overwatch and Admin can perform bulk operations (with restrictions)
+    if (!['Overwatch', 'Admin'].includes(currentUser?.role)) {
+      alert('You do not have permission for bulk operations')
       return
     }
 
