@@ -717,7 +717,7 @@ export default function AdminUsersPage() {
                     {getRoleBadge(user.role)}
                   </td>
                   <td className="px-6 py-4">
-                    {getStatusBadge(user.status)}
+                    {getStatusBadge(user.status, user.lockout_reason)}
                   </td>
                   <td className="px-6 py-4">
                     <DropdownMenu>
