@@ -28,12 +28,27 @@ export default function HomePage() {
       setErrorType('SESSION_EXPIRED')
     }
     
+    // Check if blocked (suspended or inactive)
+    const blocked = searchParams.get('blocked')
+    if (blocked === 'suspended') {
+      setErrorType('SUSPENDED')
+      setError('Your account has been suspended.')
+      setContactInfo({
+        message: 'Contact your Overwatch administrator to restore access.',
+        action: 'An Overwatch user must manually change your status back to Active.'
+      })
+    } else if (blocked === 'inactive') {
+      setErrorType('INACTIVE')
+      setError('Your account is currently inactive. Contact an administrator to reactivate.')
+    }
+    
     const checkAuth = async () => {
       try {
         const supabase = createClient()
         const { data: { session } } = await supabase.auth.getSession()
         
-        if (session) {
+        // Don't auto-redirect if user was just blocked
+        if (session && !blocked) {
           router.push('/admin/dashboard')
         } else {
           setLoading(false)
