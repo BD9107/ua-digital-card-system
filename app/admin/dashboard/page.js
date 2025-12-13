@@ -243,8 +243,8 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* Notification Banner for Overwatch - Pending Users */}
-      {isOverwatch && pendingUsersCount > 0 && (
+      {/* Notification Banner for Overwatch/Admin - Pending Users */}
+      {canAccessAdminUsers && pendingUsersCount > 0 && (
         <div className="bg-blue-50 border-b border-blue-200">
           <div className="container mx-auto px-6 py-3">
             <div className="flex items-center justify-between">
