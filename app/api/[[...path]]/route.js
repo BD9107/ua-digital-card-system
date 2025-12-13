@@ -500,9 +500,6 @@ export async function POST(request) {
         success: true, 
         admin: newAdmin,
         message: `Admin user created and invitation email sent to ${email}. Status: ${status}.`
-      }) 
-        admin: newAdmin,
-        message: `Admin user created with status: ${status}. User will need to sign up or be linked to an auth account.`
       })
     }
     
