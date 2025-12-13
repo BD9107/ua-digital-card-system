@@ -524,18 +524,20 @@ export async function POST(request) {
     }
     
     // =====================================================
-    // POST /api/admin-users/bulk - Bulk operations (Overwatch only)
+    // POST /api/admin-users/bulk - Bulk operations (Overwatch or Admin with restrictions)
+    // Role hierarchy: Overwatch > Admin > Operator > Viewer
     // =====================================================
     if (segments[0] === 'admin-users' && segments[1] === 'bulk') {
-      // Check if current user is Overwatch (by email)
+      // Check current user's role
       const { data: currentAdmin, error: adminError } = await supabase
         .from('admin_users')
         .select('role')
         .eq('email', authResult.user.email)
         .single()
       
-      if (adminError || !currentAdmin || currentAdmin.role !== 'Overwatch') {
-        return NextResponse.json({ error: 'Only Overwatch can perform bulk operations' }, { status: 403 })
+      // Only Overwatch and Admin can perform bulk operations
+      if (adminError || !currentAdmin || !['Overwatch', 'Admin'].includes(currentAdmin.role)) {
+        return NextResponse.json({ error: 'Only Overwatch and Admin can perform bulk operations' }, { status: 403 })
       }
       
       const body = await request.json()
@@ -545,13 +547,38 @@ export async function POST(request) {
         return NextResponse.json({ error: 'Action and ids array are required' }, { status: 400 })
       }
       
+      const supabaseAdmin = createSupabaseAdmin()
+      
+      // Get target users to check their roles
+      const { data: targetUsers } = await supabaseAdmin
+        .from('admin_users')
+        .select('id, role, status, email')
+        .in('id', ids)
+      
+      // Admin restrictions: Can only manage Operators and Viewers
+      if (currentAdmin.role === 'Admin') {
+        const higherRoleUsers = targetUsers?.filter(u => ['Overwatch', 'Admin'].includes(u.role)) || []
+        if (higherRoleUsers.length > 0) {
+          return NextResponse.json({ 
+            error: 'Admins can only perform bulk actions on Operators and Viewers' 
+          }, { status: 403 })
+        }
+        
+        // Admin cannot do role changes or delete
+        if (action === 'update_role' || action === 'delete') {
+          return NextResponse.json({ 
+            error: 'Admins can only change status in bulk operations' 
+          }, { status: 403 })
+        }
+      }
+      
       if (action === 'update_role') {
         const validRoles = ['Overwatch', 'Admin', 'Operator', 'Viewer']
         if (!validRoles.includes(value)) {
           return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
         }
         
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
           .from('admin_users')
           .update({ role: value })
           .in('id', ids)
@@ -568,8 +595,6 @@ export async function POST(request) {
         if (!validStatuses.includes(value)) {
           return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
         }
-        
-        const supabaseAdmin = createSupabaseAdmin()
         
         // If activating users, just update status - no password reset needed
         // Users already set their password during initial invite flow
