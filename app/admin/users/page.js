@@ -712,7 +712,8 @@ export default function AdminUsersPage() {
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-52">
-                        {canEdit(user) && currentUser.role === 'Overwatch' && (
+                        {/* Only Overwatch can change roles */}
+                        {canChangeRole() && (
                           <>
                             <DropdownMenuLabel className="flex items-center gap-2">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -738,6 +739,7 @@ export default function AdminUsersPage() {
                           </>
                         )}
                         
+                        {/* Status change - Overwatch can change any, Admin can change Operators/Viewers */}
                         {canEdit(user) && (
                           <>
                             <DropdownMenuLabel className="flex items-center gap-2">
@@ -763,6 +765,7 @@ export default function AdminUsersPage() {
                           </>
                         )}
                         
+                        {/* Only Overwatch can delete and not their own account */}
                         {canDelete() && user.id !== currentUser.id && (
                           <>
                             <DropdownMenuSeparator />
@@ -776,6 +779,13 @@ export default function AdminUsersPage() {
                               Delete User
                             </DropdownMenuItem>
                           </>
+                        )}
+                        
+                        {/* Show message if no actions available */}
+                        {!canEdit(user) && !canChangeRole() && !canDelete() && (
+                          <DropdownMenuItem disabled className="text-gray-400">
+                            No actions available
+                          </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
