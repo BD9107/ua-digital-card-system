@@ -368,8 +368,7 @@ export default function AdminDashboard() {
             
             {canAddEmployee && (
               <a
-                href="/employee-import-template.csv"
-                download="employee-import-template.csv"
+                href="/api/download-template"
                 className="text-[#1B9E9E] hover:text-[#178585] text-sm font-medium flex items-center gap-1 px-3 py-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Download CSV template with all required fields"
               >
