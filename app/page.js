@@ -4,6 +4,25 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
+// Clear ALL Supabase storage on page load
+function clearAllSupabaseStorage() {
+  if (typeof window === 'undefined') return
+  
+  // Clear localStorage
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('sb-') || key.includes('supabase')) {
+      localStorage.removeItem(key)
+    }
+  })
+  
+  // Clear sessionStorage
+  Object.keys(sessionStorage).forEach(key => {
+    if (key.startsWith('sb-') || key.includes('supabase')) {
+      sessionStorage.removeItem(key)
+    }
+  })
+}
+
 export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [signingIn, setSigningIn] = useState(false)
@@ -21,6 +40,9 @@ export default function HomePage() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    // ALWAYS clear old sessions when landing on login page
+    clearAllSupabaseStorage()
+    
     // Check if session expired
     const expired = searchParams.get('expired')
     if (expired === 'true') {
@@ -42,12 +64,10 @@ export default function HomePage() {
       setError('Your account is currently inactive. Contact an administrator to reactivate.')
     }
     
-    const checkAuth = async () => {
-      try {
-        const supabase = createClient()
-        const { data: { session } } = await supabase.auth.getSession()
-        
-        // Don't auto-redirect if user was just blocked
+    // Don't auto-redirect - always show login page
+    // This ensures suspended users can't bypass via old sessions
+    setLoading(false)
+  }, [searchParams])
         if (session && !blocked) {
           // SECURITY CHECK: Verify user status before auto-redirect
           try {
