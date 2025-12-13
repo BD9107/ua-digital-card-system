@@ -851,18 +851,21 @@ export async function PUT(request) {
         return NextResponse.json({ error: 'Admin user not found' }, { status: 404 })
       }
       
-      // Permission checks
+      // Permission checks based on role hierarchy
+      // Overwatch > Admin > Operator > Viewer
       if (currentAdmin.role === 'Viewer' || currentAdmin.role === 'Operator') {
         return NextResponse.json({ error: 'You do not have permission to update admin users' }, { status: 403 })
       }
       
-      // Admin can only update non-Overwatch users and cannot change role/status
+      // Admin restrictions
       if (currentAdmin.role === 'Admin') {
-        if (targetUser.role === 'Overwatch') {
-          return NextResponse.json({ error: 'Admins cannot modify Overwatch users' }, { status: 403 })
+        // Admin cannot modify Overwatch or other Admins
+        if (['Overwatch', 'Admin'].includes(targetUser.role)) {
+          return NextResponse.json({ error: 'Admins can only modify Operators and Viewers' }, { status: 403 })
         }
-        if (role || status) {
-          return NextResponse.json({ error: 'Admins can only update email' }, { status: 403 })
+        // Admin cannot change roles
+        if (role) {
+          return NextResponse.json({ error: 'Admins cannot change user roles' }, { status: 403 })
         }
       }
       
@@ -870,23 +873,22 @@ export async function PUT(request) {
       const updateData = {}
       if (email) updateData.email = email
       
-      // Only Overwatch can change role and status
-      if (currentAdmin.role === 'Overwatch') {
-        if (role) {
-          const validRoles = ['Overwatch', 'Admin', 'Operator', 'Viewer']
-          if (!validRoles.includes(role)) {
-            return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
-          }
-          updateData.role = role
+      // Only Overwatch can change roles
+      if (role && currentAdmin.role === 'Overwatch') {
+        const validRoles = ['Overwatch', 'Admin', 'Operator', 'Viewer']
+        if (!validRoles.includes(role)) {
+          return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
         }
-        
-        if (status) {
-          const validStatuses = ['Active', 'Inactive', 'Pending', 'Suspended']
-          if (!validStatuses.includes(status)) {
-            return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
-          }
-          updateData.status = status
+        updateData.role = role
+      }
+      
+      // Overwatch and Admin can change status (Admin only for Operators/Viewers - already checked above)
+      if (status) {
+        const validStatuses = ['Active', 'Inactive', 'Pending', 'Suspended']
+        if (!validStatuses.includes(status)) {
+          return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
         }
+        updateData.status = status
       }
       
       if (Object.keys(updateData).length === 0) {
