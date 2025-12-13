@@ -148,32 +148,6 @@ export default function AdminUsersPage() {
     }
   }
 
-  const handleUpdateStatus = async (userId, newStatus) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const response = await fetch(`/api/admin-users/${userId}`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to update status')
-      }
-
-      const result = await response.json()
-      alert(result.message || 'Status updated successfully')
-      fetchUsers()
-    } catch (error) {
-      console.error('Error updating status:', error)
-      alert(`Failed to update status: ${error.message}`)
-    }
-  }
-
   const handleUpdateRole = async (userId, newRole) => {
     if (currentUser.role !== 'Overwatch') {
       alert('Only Overwatch can change roles')
@@ -201,6 +175,38 @@ export default function AdminUsersPage() {
     } catch (error) {
       console.error('Error updating role:', error)
       alert(`Failed to update role: ${error.message}`)
+    }
+  }
+
+  const handleUpdateStatus = async (userId, newStatus) => {
+    // Both Overwatch and Admin can update status (with restrictions)
+    if (!['Overwatch', 'Admin'].includes(currentUser?.role)) {
+      alert('You do not have permission to change status')
+      return
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch(`/api/admin-users/${userId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update status')
+      }
+
+      const result = await response.json()
+      alert(result.message || 'Status updated successfully')
+      fetchUsers()
+    } catch (error) {
+      console.error('Error updating status:', error)
+      alert(`Failed to update status: ${error.message}`)
     }
   }
 
