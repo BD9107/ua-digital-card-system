@@ -59,6 +59,23 @@ export default function AdminDashboard() {
           }
         })
         
+        // Check for blocked status from API-level security
+        if (adminResponse.status === 403) {
+          const errorData = await adminResponse.json()
+          if (errorData.blocked === 'suspended' || errorData.error === 'ACCOUNT_SUSPENDED') {
+            await supabaseClient.auth.signOut()
+            document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+            router.push('/?blocked=suspended')
+            return
+          }
+          if (errorData.blocked === 'inactive' || errorData.error === 'ACCOUNT_INACTIVE') {
+            await supabaseClient.auth.signOut()
+            document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+            router.push('/?blocked=inactive')
+            return
+          }
+        }
+        
         if (adminResponse.ok) {
           const adminData = await adminResponse.json()
           
