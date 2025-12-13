@@ -349,7 +349,187 @@ export async function POST(request) {
   const segments = path.split('/').filter(Boolean)
 
   try {
-    // Auth routes
+    // =====================================================
+    // POST /api/login - Secure login with lockout protection
+    // =====================================================
+    if (segments[0] === 'login') {
+      const body = await request.json()
+      const { email, password } = body
+      
+      if (!email || !password) {
+        return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
+      }
+      
+      const supabaseAdmin = createSupabaseAdmin()
+      
+      // First check if user exists in admin_users and their status
+      const { data: adminUser, error: adminError } = await supabaseAdmin
+        .from('admin_users')
+        .select('id, email, role, status, failed_login_attempts, lockout_reason')
+        .eq('email', email.toLowerCase())
+        .single()
+      
+      // Check if user is suspended or inactive BEFORE attempting login
+      if (adminUser) {
+        if (adminUser.status === 'Suspended') {
+          return NextResponse.json({ 
+            error: 'SUSPENDED',
+            message: 'Your account has been suspended due to multiple failed login attempts.',
+            lockout_reason: adminUser.lockout_reason || 'Security lockout',
+            contact_info: {
+              message: 'Contact your Overwatch administrator to restore access.',
+              action: 'An Overwatch user must manually change your status back to Active.'
+            }
+          }, { status: 403 })
+        }
+        
+        if (adminUser.status === 'Inactive') {
+          return NextResponse.json({ 
+            error: 'INACTIVE',
+            message: 'Your account is currently inactive. Contact an administrator to reactivate.'
+          }, { status: 403 })
+        }
+      }
+      
+      // Attempt login with Supabase Auth
+      const supabase = await createSupabaseServer()
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      
+      if (loginError) {
+        // Login failed - record the failed attempt if user exists in admin_users
+        if (adminUser) {
+          // Get current failed attempts
+          const currentAttempts = adminUser.failed_login_attempts || 0
+          const now = new Date().toISOString()
+          
+          // Get first failed login time
+          const { data: currentData } = await supabaseAdmin
+            .from('admin_users')
+            .select('first_failed_login_at')
+            .eq('email', email.toLowerCase())
+            .single()
+          
+          let firstFailedAt = currentData?.first_failed_login_at
+          
+          // Check if 10 minute window has passed - reset if so
+          if (firstFailedAt) {
+            const firstFailedTime = new Date(firstFailedAt)
+            const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000)
+            
+            if (firstFailedTime < tenMinutesAgo) {
+              // Reset the counter
+              firstFailedAt = now
+              await supabaseAdmin
+                .from('admin_users')
+                .update({
+                  failed_login_attempts: 1,
+                  first_failed_login_at: now,
+                  last_failed_login_at: now
+                })
+                .eq('email', email.toLowerCase())
+              
+              return NextResponse.json({ 
+                error: 'Invalid credentials',
+                attempts_remaining: 4
+              }, { status: 401 })
+            }
+          }
+          
+          // Increment failed attempts
+          const newAttempts = currentAttempts + 1
+          
+          const updateData = {
+            failed_login_attempts: newAttempts,
+            last_failed_login_at: now
+          }
+          
+          // Set first_failed_login_at if this is the first attempt
+          if (!firstFailedAt) {
+            updateData.first_failed_login_at = now
+          }
+          
+          // Check if we need to suspend the user
+          if (newAttempts >= 5) {
+            updateData.status = 'Suspended'
+            updateData.lockout_reason = 'Automatic lockout: 5 failed login attempts within 10 minutes at ' + now
+            
+            await supabaseAdmin
+              .from('admin_users')
+              .update(updateData)
+              .eq('email', email.toLowerCase())
+            
+            return NextResponse.json({ 
+              error: 'SUSPENDED',
+              message: 'Your account has been suspended due to multiple failed login attempts.',
+              lockout_reason: 'Too many failed login attempts',
+              contact_info: {
+                message: 'Contact your Overwatch administrator to restore access.',
+                action: 'An Overwatch user must manually change your status back to Active.'
+              }
+            }, { status: 403 })
+          }
+          
+          await supabaseAdmin
+            .from('admin_users')
+            .update(updateData)
+            .eq('email', email.toLowerCase())
+          
+          return NextResponse.json({ 
+            error: 'Invalid credentials',
+            attempts_remaining: 5 - newAttempts
+          }, { status: 401 })
+        }
+        
+        // User not in admin_users - generic error
+        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      }
+      
+      // Login successful!
+      // Check if user exists in admin_users table
+      if (!adminUser) {
+        // User authenticated but not an admin - sign them out
+        await supabase.auth.signOut()
+        return NextResponse.json({ 
+          error: 'You do not have admin access. Contact an administrator.'
+        }, { status: 403 })
+      }
+      
+      // Reset failed login attempts on successful login
+      await supabaseAdmin
+        .from('admin_users')
+        .update({
+          failed_login_attempts: 0,
+          first_failed_login_at: null,
+          last_failed_login_at: null
+        })
+        .eq('email', email.toLowerCase())
+      
+      // Set last activity cookie for session timeout
+      const response = NextResponse.json({ 
+        user: data.user, 
+        session: data.session,
+        admin: {
+          role: adminUser.role,
+          status: adminUser.status
+        }
+      })
+      
+      // Set the last activity cookie
+      response.cookies.set('ua_last_activity', Date.now().toString(), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 60, // 30 minutes
+        path: '/'
+      })
+      
+      return response
+    }
+    
+    // Legacy auth routes (keep for backward compatibility)
     if (segments[0] === 'auth') {
       const body = await request.json()
       const { action, email, password } = body
@@ -371,11 +551,15 @@ export async function POST(request) {
       if (action === 'signout') {
         const { error } = await supabase.auth.signOut()
         
+        // Clear the activity cookie
+        const response = NextResponse.json({ success: true })
+        response.cookies.delete('ua_last_activity')
+        
         if (error) {
           return NextResponse.json({ error: error.message }, { status: 500 })
         }
         
-        return NextResponse.json({ success: true })
+        return response
       }
       
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
