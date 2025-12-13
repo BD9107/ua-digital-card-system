@@ -872,7 +872,7 @@ export default function AdminUsersPage() {
 }
 
 // Add User Modal Component
-function AddUserModal({ onClose, onCreate }) {
+function AddUserModal({ onClose, onCreate, currentUserRole }) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('Viewer')
   const [loading, setLoading] = useState(false)
@@ -891,13 +891,18 @@ function AddUserModal({ onClose, onCreate }) {
     }
   }
 
-  // Role options with line icons
-  const roleOptions = [
+  // Role options based on current user's role
+  // Overwatch can create any role, Admin can only create Operator and Viewer
+  const getAllRoleOptions = () => [
     { value: 'Overwatch', label: 'Overwatch - Full system control' },
-    { value: 'Admin', label: 'Admin - Manage employees' },
-    { value: 'Operator', label: 'Operator - Limited access' },
-    { value: 'Viewer', label: 'Viewer - Read only' }
+    { value: 'Admin', label: 'Admin - Manage employees & lower roles' },
+    { value: 'Operator', label: 'Operator - Add/Edit employees' },
+    { value: 'Viewer', label: 'Viewer - Read only access' }
   ]
+  
+  const roleOptions = currentUserRole === 'Overwatch' 
+    ? getAllRoleOptions()
+    : getAllRoleOptions().filter(r => ['Operator', 'Viewer'].includes(r.value))
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
