@@ -147,6 +147,11 @@ export default function HomePage() {
       const data = await response.json()
       
       if (!response.ok) {
+        // IMPORTANT: Sign out any existing Supabase session to prevent auto-login bypass
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+        
         // Handle different error types
         if (data.error === 'SUSPENDED') {
           setErrorType('SUSPENDED')
