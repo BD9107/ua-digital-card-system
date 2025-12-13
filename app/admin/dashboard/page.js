@@ -196,7 +196,7 @@ export default function AdminDashboard() {
 
       const result = await response.json()
       alert(`Successfully imported ${result.count} employees!`)
-      fetchEmployees(supabase)
+      fetchEmployees()
     } catch (error) {
       alert(`Import failed: ${error.message}`)
     } finally {
