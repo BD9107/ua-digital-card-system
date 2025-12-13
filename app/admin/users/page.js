@@ -53,6 +53,22 @@ export default function AdminUsersPage() {
       }
 
       const adminUser = await response.json()
+      
+      // SECURITY CHECK: Block Suspended and Inactive users
+      if (adminUser.status === 'Suspended') {
+        await supabase.auth.signOut()
+        document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+        router.push('/?blocked=suspended')
+        return
+      }
+      
+      if (adminUser.status === 'Inactive') {
+        await supabase.auth.signOut()
+        document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+        router.push('/?blocked=inactive')
+        return
+      }
+      
       setCurrentUser(adminUser)
       fetchUsers(session.access_token)
     } catch (error) {
