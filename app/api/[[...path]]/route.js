@@ -1064,8 +1064,20 @@ export async function DELETE(request) {
       return NextResponse.json({ success: true, message: 'Admin user deleted successfully' })
     }
 
-    // Delete employee
+    // Delete employee (Overwatch only)
     if (segments[0] === 'employees' && segments[1]) {
+      // Get current user's role
+      const { data: currentAdmin } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('email', authResult.user.email)
+        .single()
+      
+      // Only Overwatch can delete employees
+      if (!currentAdmin || currentAdmin.role !== 'Overwatch') {
+        return NextResponse.json({ error: 'Only Overwatch can delete employees' }, { status: 403 })
+      }
+      
       const { error } = await supabase
         .from('employees')
         .delete()
