@@ -63,8 +63,8 @@ export default function AdminDashboard() {
           const adminData = await adminResponse.json()
           setAdminUser(adminData)
           
-          // If Overwatch, fetch pending users count
-          if (adminData.role === 'Overwatch') {
+          // If Overwatch or Admin, fetch pending users count
+          if (['Overwatch', 'Admin'].includes(adminData.role)) {
             const usersResponse = await fetch('/api/admin-users', {
               headers: {
                 'Authorization': `Bearer ${session.access_token}`
@@ -72,8 +72,11 @@ export default function AdminDashboard() {
             })
             if (usersResponse.ok) {
               const usersData = await usersResponse.json()
-              const pending = usersData.filter(u => u.status === 'Pending').length
-              setPendingUsersCount(pending)
+              // Admin can only see pending Operators and Viewers
+              const pendingForRole = adminData.role === 'Overwatch' 
+                ? usersData.filter(u => u.status === 'Pending')
+                : usersData.filter(u => u.status === 'Pending' && ['Operator', 'Viewer'].includes(u.role))
+              setPendingUsersCount(pendingForRole.length)
             }
           }
         }
