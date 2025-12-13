@@ -213,15 +213,85 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#F7F9FC]">
+      {/* Pending Approval Banner for non-Active users */}
+      {isViewOnly && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="container mx-auto px-6 py-3">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <span className="font-medium text-amber-800">Your account is pending approval.</span>
+                <span className="text-amber-700 ml-1">You have view-only access until an administrator activates your account.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Banner for Overwatch - Pending Users */}
+      {isOverwatch && pendingUsersCount > 0 && (
+        <div className="bg-blue-50 border-b border-blue-200">
+          <div className="container mx-auto px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {pendingUsersCount}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-blue-800">{pendingUsersCount} user{pendingUsersCount > 1 ? 's' : ''} pending approval.</span>
+                  <span className="text-blue-700 ml-1">Review and activate new admin accounts.</span>
+                </div>
+              </div>
+              <Link
+                href="/admin/users"
+                className="px-4 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Review Now
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modern Light Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-6 py-5">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-[#1B9E9E] to-[#2AB8B8] bg-clip-text text-transparent">Admin Dashboard</h1>
-              <p className="text-gray-500 mt-1 text-sm">Manage your team&apos;s digital cards</p>
+              <p className="text-gray-500 mt-1 text-sm">
+                Manage your team&apos;s digital cards
+                {adminUser && (
+                  <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
+                    {adminUser.role} • {adminUser.status}
+                  </span>
+                )}
+              </p>
             </div>
             <div className="flex items-center gap-4">
+              {isOverwatch && (
+                <Link
+                  href="/admin/users"
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  Admin Users
+                  {pendingUsersCount > 0 && (
+                    <span className="ml-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                      {pendingUsersCount}
+                    </span>
+                  )}
+                </Link>
+              )}
               <span className="text-sm text-gray-600">{user?.email}</span>
               <button
                 onClick={handleSignOut}
@@ -239,15 +309,28 @@ export default function AdminDashboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex gap-3">
-              <Link
-                href="/admin/employees/new"
-                className="btn-primary flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add Employee
-              </Link>
+              {!isViewOnly ? (
+                <Link
+                  href="/admin/employees/new"
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add Employee
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="btn-primary flex items-center gap-2 opacity-50 cursor-not-allowed"
+                  title="Your account is pending approval"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add Employee
+                </button>
+              )
 
               <label className="btn-secondary cursor-pointer flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
