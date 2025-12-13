@@ -8,6 +8,8 @@ import { Switch } from '@/components/ui/switch'
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null)
+  const [adminUser, setAdminUser] = useState(null)
+  const [pendingUsersCount, setPendingUsersCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [employees, setEmployees] = useState([])
   const [importing, setImporting] = useState(false)
@@ -17,6 +19,10 @@ export default function AdminDashboard() {
   const router = useRouter()
   const supabaseRef = useRef(null)
   const initializedRef = useRef(false)
+
+  // Check if user has view-only access (non-Active status)
+  const isViewOnly = adminUser && adminUser.status !== 'Active'
+  const isOverwatch = adminUser && adminUser.role === 'Overwatch'
 
   useEffect(() => {
     if (initializedRef.current) return
@@ -35,6 +41,33 @@ export default function AdminDashboard() {
         }
 
         setUser(session.user)
+        
+        // Fetch admin user info
+        const adminResponse = await fetch('/api/admin-users/me', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        })
+        
+        if (adminResponse.ok) {
+          const adminData = await adminResponse.json()
+          setAdminUser(adminData)
+          
+          // If Overwatch, fetch pending users count
+          if (adminData.role === 'Overwatch') {
+            const usersResponse = await fetch('/api/admin-users', {
+              headers: {
+                'Authorization': `Bearer ${session.access_token}`
+              }
+            })
+            if (usersResponse.ok) {
+              const usersData = await usersResponse.json()
+              const pending = usersData.filter(u => u.status === 'Pending').length
+              setPendingUsersCount(pending)
+            }
+          }
+        }
+        
         setLoading(false)
         fetchEmployees(supabaseClient)
 
