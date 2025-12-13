@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(true)
@@ -12,6 +12,7 @@ export default function AuthCallbackPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [userEmail, setUserEmail] = useState('')
+  const [debugInfo, setDebugInfo] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
@@ -22,56 +23,120 @@ export default function AuthCallbackPage() {
 
   const handleAuthCallback = async () => {
     try {
-      // Check for hash parameters (Supabase uses hash for auth tokens)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1))
-      const accessToken = hashParams.get('access_token')
-      const refreshToken = hashParams.get('refresh_token')
-      const type = hashParams.get('type')
+      // Get the full URL for debugging
+      const fullUrl = window.location.href
+      const hash = window.location.hash
+      const search = window.location.search
+      
+      console.log('Full URL:', fullUrl)
+      console.log('Hash:', hash)
+      console.log('Search:', search)
+      
+      setDebugInfo(`Processing authentication...`)
 
-      console.log('Auth callback - type:', type, 'has tokens:', !!accessToken)
+      // Method 1: Check hash parameters (most common for Supabase)
+      if (hash && hash.length > 1) {
+        const hashParams = new URLSearchParams(hash.substring(1))
+        const accessToken = hashParams.get('access_token')
+        const refreshToken = hashParams.get('refresh_token')
+        const type = hashParams.get('type')
+        const errorCode = hashParams.get('error')
+        const errorDescription = hashParams.get('error_description')
 
-      if (accessToken && refreshToken) {
-        // Set the session with the tokens from the URL
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken
-        })
+        console.log('Hash params - type:', type, 'has access_token:', !!accessToken, 'error:', errorCode)
 
-        if (error) {
-          console.error('Session error:', error)
-          setError('Invalid or expired link. Please request a new invitation.')
+        if (errorCode) {
+          setError(errorDescription || errorCode || 'Authentication failed')
+          setLoading(false)
+          return
+        }
+
+        if (accessToken && refreshToken) {
+          const { data, error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+
+          if (sessionError) {
+            console.error('Session error:', sessionError)
+            setError(`Session error: ${sessionError.message}`)
+            setLoading(false)
+            return
+          }
+
+          if (data.user) {
+            setUserEmail(data.user.email || '')
+            setLoading(false)
+            return
+          }
+        }
+      }
+
+      // Method 2: Check query parameters (alternative format)
+      const token = searchParams.get('token')
+      const type = searchParams.get('type')
+      const code = searchParams.get('code')
+
+      console.log('Query params - token:', !!token, 'type:', type, 'code:', !!code)
+
+      // Handle PKCE flow (code exchange)
+      if (code) {
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+        
+        if (exchangeError) {
+          console.error('Code exchange error:', exchangeError)
+          setError(`Code exchange error: ${exchangeError.message}`)
           setLoading(false)
           return
         }
 
         if (data.user) {
           setUserEmail(data.user.email || '')
-          
-          // If this is an invite or recovery, show password form
-          if (type === 'invite' || type === 'recovery' || type === 'signup') {
-            setLoading(false)
-            return
-          }
-
-          // Otherwise redirect to dashboard
-          router.push('/admin/dashboard')
+          setLoading(false)
           return
         }
       }
 
-      // Check if already logged in
-      const { data: { session } } = await supabase.auth.getSession()
+      // Method 3: Check if there's an existing session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError) {
+        console.error('Get session error:', sessionError)
+      }
+
       if (session?.user) {
         setUserEmail(session.user.email || '')
         setLoading(false)
         return
       }
 
-      setError('No valid authentication found. Please request a new invitation.')
+      // Method 4: Try to verify OTP if token exists
+      if (token && type) {
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: token,
+          type: type === 'invite' ? 'invite' : type === 'recovery' ? 'recovery' : 'email'
+        })
+
+        if (verifyError) {
+          console.error('OTP verify error:', verifyError)
+          setError(`Verification error: ${verifyError.message}`)
+          setLoading(false)
+          return
+        }
+
+        if (data.user) {
+          setUserEmail(data.user.email || '')
+          setLoading(false)
+          return
+        }
+      }
+
+      // No valid auth found
+      setError('No valid authentication found. The link may have expired. Please use "Forgot Password" on the login page to request a new link.')
       setLoading(false)
     } catch (err) {
       console.error('Auth callback error:', err)
-      setError('An error occurred. Please try again.')
+      setError(`An error occurred: ${err.message}`)
       setLoading(false)
     }
   }
@@ -121,7 +186,7 @@ export default function AuthCallbackPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1B9E9E] mb-4"></div>
-            <p className="text-gray-600">Verifying your invitation...</p>
+            <p className="text-gray-600">{debugInfo || 'Verifying your invitation...'}</p>
           </div>
         </div>
       </div>
@@ -256,5 +321,22 @@ export default function AuthCallbackPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[#1B9E9E] to-[#2AB8B8] flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1B9E9E] mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <AuthCallbackContent />
+    </Suspense>
   )
 }
