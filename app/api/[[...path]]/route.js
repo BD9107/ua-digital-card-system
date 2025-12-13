@@ -802,19 +802,22 @@ export async function PUT(request) {
       const body = await request.json()
       const { role, status, email } = body
       
-      // Get current user's admin info
+      // Get current user's admin info (by email for RLS compatibility)
       const { data: currentAdmin, error: adminError } = await supabase
         .from('admin_users')
         .select('*')
-        .eq('id', authResult.user.id)
+        .eq('email', authResult.user.email)
         .single()
       
       if (adminError || !currentAdmin) {
         return NextResponse.json({ error: 'You are not an admin user' }, { status: 403 })
       }
       
+      // Use admin client to bypass RLS for reading target user
+      const supabaseAdmin = createSupabaseAdmin()
+      
       // Get the target user's current data
-      const { data: targetUser, error: targetError } = await supabase
+      const { data: targetUser, error: targetError } = await supabaseAdmin
         .from('admin_users')
         .select('*')
         .eq('id', targetId)
@@ -866,8 +869,8 @@ export async function PUT(request) {
         return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
       }
       
-      // Perform the update
-      const { data, error } = await supabase
+      // Perform the update using admin client
+      const { data, error } = await supabaseAdmin
         .from('admin_users')
         .update(updateData)
         .eq('id', targetId)
@@ -882,12 +885,12 @@ export async function PUT(request) {
       // If status changed from Pending to Active, send password reset email
       if (status === 'Active' && targetUser.status === 'Pending') {
         try {
-          await supabase.auth.resetPasswordForEmail(targetUser.email, {
+          await supabaseAdmin.auth.resetPasswordForEmail(targetUser.email, {
             redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/dashboard`
           })
           return NextResponse.json({ 
             ...data, 
-            message: `User activated. Password reset email sent to ${targetUser.email}` 
+            message: `User activated! Password reset email sent to ${targetUser.email}` 
           })
         } catch (emailError) {
           console.error('Failed to send password reset email:', emailError)
