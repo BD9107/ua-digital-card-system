@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 
-// Clear ALL Supabase storage on page load
+// Clear ALL Supabase storage
 function clearAllSupabaseStorage() {
   if (typeof window === 'undefined') return
   
@@ -43,15 +43,15 @@ export default function HomePage() {
     // ALWAYS clear old sessions when landing on login page
     clearAllSupabaseStorage()
     
-    // Check if session expired
+    // Check URL params for messages
     const expired = searchParams.get('expired')
+    const blocked = searchParams.get('blocked')
+    
     if (expired === 'true') {
-      setError('Your session has expired due to inactivity. Please sign in again.')
+      setError('Your session has expired. Please sign in again.')
       setErrorType('SESSION_EXPIRED')
     }
     
-    // Check if blocked (suspended or inactive)
-    const blocked = searchParams.get('blocked')
     if (blocked === 'suspended') {
       setErrorType('SUSPENDED')
       setError('Your account has been suspended.')
@@ -64,88 +64,8 @@ export default function HomePage() {
       setError('Your account is currently inactive. Contact an administrator to reactivate.')
     }
     
-    // Don't auto-redirect - always show login page
-    // This ensures suspended users can't bypass via old sessions
+    // Always show login page - no auto-redirect
     setLoading(false)
-  }, [searchParams])
-        if (session && !blocked) {
-          // SECURITY CHECK: Verify user status before auto-redirect
-          try {
-            const statusResponse = await fetch('/api/admin-users/me', {
-              headers: {
-                'Authorization': `Bearer ${session.access_token}`
-              }
-            })
-            
-            // Check for blocked status from API
-            if (statusResponse.status === 403) {
-              const errorData = await statusResponse.json()
-              // Sign out and show appropriate message
-              await supabase.auth.signOut()
-              document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-              
-              if (errorData.blocked === 'suspended' || errorData.error === 'ACCOUNT_SUSPENDED') {
-                setErrorType('SUSPENDED')
-                setError('Your account has been suspended.')
-                setContactInfo({
-                  message: 'Contact your Overwatch administrator to restore access.',
-                  action: 'An Overwatch user must manually change your status back to Active.'
-                })
-              } else if (errorData.blocked === 'inactive' || errorData.error === 'ACCOUNT_INACTIVE') {
-                setErrorType('INACTIVE')
-                setError('Your account is currently inactive. Contact an administrator to reactivate.')
-              }
-              setLoading(false)
-              return
-            }
-            
-            if (statusResponse.ok) {
-              const adminUser = await statusResponse.json()
-              
-              // Double-check status from response data
-              if (adminUser.status === 'Suspended') {
-                await supabase.auth.signOut()
-                document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-                setErrorType('SUSPENDED')
-                setError('Your account has been suspended.')
-                setContactInfo({
-                  message: 'Contact your Overwatch administrator to restore access.',
-                  action: 'An Overwatch user must manually change your status back to Active.'
-                })
-                setLoading(false)
-                return
-              }
-              
-              if (adminUser.status === 'Inactive') {
-                await supabase.auth.signOut()
-                document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-                setErrorType('INACTIVE')
-                setError('Your account is currently inactive. Contact an administrator to reactivate.')
-                setLoading(false)
-                return
-              }
-              
-              // User is valid - redirect to dashboard
-              router.push('/admin/dashboard')
-            } else {
-              // API error - still redirect to dashboard, let dashboard handle it
-              router.push('/admin/dashboard')
-            }
-          } catch (apiError) {
-            console.error('Error checking user status:', apiError)
-            // On error, still redirect - dashboard will handle auth
-            router.push('/admin/dashboard')
-          }
-        } else {
-          setLoading(false)
-        }
-      } catch (error) {
-        console.error('Error initializing Supabase:', error)
-        setLoading(false)
-      }
-    }
-    
-    checkAuth()
   }, [searchParams])
 
   const handleSubmit = async (e) => {
@@ -157,7 +77,7 @@ export default function HomePage() {
     setSigningIn(true)
 
     try {
-      // Use the secure login endpoint
+      // Call our secure login endpoint
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,12 +87,7 @@ export default function HomePage() {
       const data = await response.json()
       
       if (!response.ok) {
-        // IMPORTANT: Sign out any existing Supabase session to prevent auto-login bypass
-        const supabase = createClient()
-        await supabase.auth.signOut()
-        document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-        
-        // Handle different error types
+        // Handle errors
         if (data.error === 'SUSPENDED') {
           setErrorType('SUSPENDED')
           setError(data.message)
@@ -190,10 +105,8 @@ export default function HomePage() {
         return
       }
       
-      // Login successful - use Supabase client to set session
+      // Login successful - set session and redirect
       const supabase = createClient()
-      
-      // Set the session from the response
       if (data.session) {
         await supabase.auth.setSession({
           access_token: data.session.access_token,
@@ -233,32 +146,10 @@ export default function HomePage() {
     }
   }
 
-  // Force sign out function for clearing stuck sessions
-  const handleForceSignOut = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-    // Clear localStorage
-    if (typeof window !== 'undefined') {
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('sb-') || key.includes('supabase')) {
-          localStorage.removeItem(key)
-        }
-      })
-    }
-    window.location.reload()
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F7F9FC] via-[#EEF2FF] to-[#E0E7FF]">
         <div className="text-gray-700 text-xl">Loading...</div>
-        <button 
-          onClick={handleForceSignOut}
-          className="ml-4 text-sm text-gray-500 underline"
-        >
-          Clear Session
-        </button>
       </div>
     )
   }
@@ -290,27 +181,12 @@ export default function HomePage() {
                     Sign in to manage digital cards
                   </p>
 
-                  {/* Session Expired Warning */}
-                  {errorType === 'SESSION_EXPIRED' && (
-                    <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                      <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div className="text-left">
-                          <div className="text-sm font-medium text-amber-800">Session Expired</div>
-                          <div className="text-xs text-amber-700 mt-1">{error}</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Suspended Account Error */}
                   {errorType === 'SUSPENDED' && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
                       <div className="flex items-start gap-3">
                         <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                         </svg>
                         <div className="text-left">
                           <div className="text-sm font-semibold text-red-800">Account Suspended</div>
@@ -342,6 +218,21 @@ export default function HomePage() {
                     </div>
                   )}
 
+                  {/* Session Expired */}
+                  {errorType === 'SESSION_EXPIRED' && (
+                    <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                      <div className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="text-left">
+                          <div className="text-sm font-medium text-amber-800">Session Expired</div>
+                          <div className="text-xs text-amber-700 mt-1">{error}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Invalid Credentials Error */}
                   {errorType === 'INVALID' && error && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
@@ -361,7 +252,7 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {/* Generic error (no type) */}
+                  {/* Generic error */}
                   {!errorType && error && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
                       {error}
@@ -370,28 +261,24 @@ export default function HomePage() {
 
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-gray-700 font-medium mb-2 text-sm">
-                        Email Address
-                      </label>
+                      <label className="block text-gray-700 font-medium mb-2 text-sm">Email Address</label>
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="input-material"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B9E9E]/20 focus:border-[#1B9E9E]"
                         placeholder="admin@example.com"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-gray-700 font-medium mb-2 text-sm">
-                        Password
-                      </label>
+                      <label className="block text-gray-700 font-medium mb-2 text-sm">Password</label>
                       <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="input-material"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B9E9E]/20 focus:border-[#1B9E9E]"
                         placeholder="••••••••"
                         required
                       />
@@ -419,16 +306,6 @@ export default function HomePage() {
                       Forgot your password?
                     </button>
                   </div>
-
-                  {/* Security Notice */}
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <span>Session expires after 30 minutes of inactivity</span>
-                    </div>
-                  </div>
                 </>
               ) : (
                 <>
@@ -453,14 +330,12 @@ export default function HomePage() {
 
                   <form onSubmit={handleForgotPassword} className="space-y-4">
                     <div>
-                      <label className="block text-gray-700 font-medium mb-2 text-sm">
-                        Email Address
-                      </label>
+                      <label className="block text-gray-700 font-medium mb-2 text-sm">Email Address</label>
                       <input
                         type="email"
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
-                        className="input-material"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1B9E9E]/20 focus:border-[#1B9E9E]"
                         placeholder="admin@example.com"
                         required
                       />
