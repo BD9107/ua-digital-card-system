@@ -895,23 +895,13 @@ export async function PUT(request) {
         return NextResponse.json({ error: error.message }, { status: 500 })
       }
       
-      // If status changed from Pending to Active, send password reset email
+      // If status changed from Pending to Active, just confirm activation
+      // No password reset email needed - user already set password during initial invite
       if (status === 'Active' && targetUser.status === 'Pending') {
-        try {
-          await supabaseAdmin.auth.resetPasswordForEmail(targetUser.email, {
-            redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
-          })
-          return NextResponse.json({ 
-            ...data, 
-            message: `User activated! Password reset email sent to ${targetUser.email}` 
-          })
-        } catch (emailError) {
-          console.error('Failed to send password reset email:', emailError)
-          return NextResponse.json({ 
-            ...data, 
-            warning: 'User activated but password reset email failed to send' 
-          })
-        }
+        return NextResponse.json({ 
+          ...data, 
+          message: `User ${targetUser.email} has been activated successfully!` 
+        })
       }
       
       return NextResponse.json(data)
