@@ -213,10 +213,32 @@ export default function HomePage() {
     }
   }
 
+  // Force sign out function for clearing stuck sessions
+  const handleForceSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    // Clear localStorage
+    if (typeof window !== 'undefined') {
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('sb-') || key.includes('supabase')) {
+          localStorage.removeItem(key)
+        }
+      })
+    }
+    window.location.reload()
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F7F9FC] via-[#EEF2FF] to-[#E0E7FF]">
         <div className="text-gray-700 text-xl">Loading...</div>
+        <button 
+          onClick={handleForceSignOut}
+          className="ml-4 text-sm text-gray-500 underline"
+        >
+          Clear Session
+        </button>
       </div>
     )
   }
