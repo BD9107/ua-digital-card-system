@@ -322,7 +322,7 @@ export default function AdminUsersPage() {
     )
   }
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, lockoutReason = null) => {
     const badges = {
       Active: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', dot: 'bg-emerald-500' },
       Pending: { color: 'bg-amber-100 text-amber-800 border-amber-200', dot: 'bg-amber-500' },
@@ -330,6 +330,23 @@ export default function AdminUsersPage() {
       Suspended: { color: 'bg-red-100 text-red-800 border-red-200', dot: 'bg-red-500' }
     }
     const badge = badges[status] || badges.Inactive
+    
+    // Add tooltip for suspended users with lockout reason
+    if (status === 'Suspended' && lockoutReason) {
+      return (
+        <span 
+          className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${badge.color} cursor-help`}
+          title={lockoutReason}
+        >
+          <span className={`w-2 h-2 rounded-full ${badge.dot}`}></span>
+          {status}
+          <svg className="w-3 h-3 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H9m3-10V6a3 3 0 00-6 0v1m6 0H9m3 0a3 3 0 016 0v1m-6 0h6" />
+          </svg>
+        </span>
+      )
+    }
+    
     return (
       <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${badge.color}`}>
         <span className={`w-2 h-2 rounded-full ${badge.dot}`}></span>
