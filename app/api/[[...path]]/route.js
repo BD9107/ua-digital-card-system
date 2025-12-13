@@ -564,12 +564,13 @@ export async function POST(request) {
         
         const supabaseAdmin = createSupabaseAdmin()
         
-        // If activating users, we need to send password reset emails
+        // If activating users, just update status - no password reset needed
+        // Users already set their password during initial invite flow
         if (value === 'Active') {
-          // Get users that are being activated from Pending
+          // Get count of users being activated from Pending
           const { data: pendingUsers } = await supabaseAdmin
             .from('admin_users')
-            .select('id, email, status')
+            .select('id, email')
             .in('id', ids)
             .eq('status', 'Pending')
           
@@ -583,32 +584,10 @@ export async function POST(request) {
             return NextResponse.json({ error: error.message }, { status: 500 })
           }
           
-          // Send password reset emails to newly activated users using admin client
-          const emailsSent = []
-          for (const user of (pendingUsers || [])) {
-            try {
-              const { error: resetError } = await supabaseAdmin.auth.admin.generateLink({
-                type: 'recovery',
-                email: user.email,
-                options: {
-                  redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
-                }
-              })
-              if (!resetError) {
-                // Also send the actual reset email
-                await supabaseAdmin.auth.resetPasswordForEmail(user.email, {
-                  redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`
-                })
-                emailsSent.push(user.email)
-              }
-            } catch (e) {
-              console.error(`Failed to send reset email to ${user.email}:`, e)
-            }
-          }
-          
+          const activatedCount = pendingUsers?.length || 0
           return NextResponse.json({ 
             success: true, 
-            message: `Updated status to ${value} for ${ids.length} users. Password reset emails sent to: ${emailsSent.join(', ') || 'none'}`
+            message: `Activated ${activatedCount} user(s) successfully!`
           })
         }
         
