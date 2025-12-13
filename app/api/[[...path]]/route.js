@@ -399,6 +399,9 @@ export async function POST(request) {
       const body = await request.json()
       const { email, password } = body
       
+      console.log('=== LOGIN ATTEMPT ===')
+      console.log('Email:', email)
+      
       if (!email || !password) {
         return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
       }
@@ -412,9 +415,15 @@ export async function POST(request) {
         .eq('email', email.toLowerCase())
         .single()
       
+      console.log('Admin user lookup result:', adminUser ? { email: adminUser.email, status: adminUser.status, role: adminUser.role } : 'NOT FOUND')
+      console.log('Admin error:', adminError)
+      
       // Check if user is suspended or inactive BEFORE attempting login
       if (adminUser) {
+        console.log('Checking status:', adminUser.status)
+        
         if (adminUser.status === 'Suspended') {
+          console.log('BLOCKING SUSPENDED USER:', email)
           return NextResponse.json({ 
             error: 'SUSPENDED',
             message: 'Your account has been suspended due to multiple failed login attempts.',
@@ -427,6 +436,7 @@ export async function POST(request) {
         }
         
         if (adminUser.status === 'Inactive') {
+          console.log('BLOCKING INACTIVE USER:', email)
           return NextResponse.json({ 
             error: 'INACTIVE',
             message: 'Your account is currently inactive. Contact an administrator to reactivate.'
