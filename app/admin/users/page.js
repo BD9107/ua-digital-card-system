@@ -116,8 +116,9 @@ export default function AdminUsersPage() {
   }
 
   const handleCreateUser = async (email, role) => {
-    if (currentUser.role !== 'Overwatch') {
-      alert('Only Overwatch can create admin users')
+    // Both Overwatch and Admin can create users (with role restrictions handled by backend)
+    if (!['Overwatch', 'Admin'].includes(currentUser?.role)) {
+      alert('Only Overwatch and Admin can create admin users')
       return
     }
 
