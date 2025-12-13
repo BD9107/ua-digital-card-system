@@ -414,31 +414,83 @@ export default function AdminUsersPage() {
                 )}
               </div>
 
-              {/* Role Filter */}
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B9E9E]/20 focus:border-[#1B9E9E] bg-white"
-              >
-                <option value="all">All Roles</option>
-                <option value="Overwatch">Overwatch</option>
-                <option value="Admin">Admin</option>
-                <option value="Operator">Operator</option>
-                <option value="Viewer">Viewer</option>
-              </select>
+              {/* Role Filter Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B9E9E]/20 focus:border-[#1B9E9E] bg-white flex items-center gap-2 min-w-[160px]">
+                    {roleFilter === 'all' ? (
+                      <>
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span className="text-gray-700">All Roles</span>
+                      </>
+                    ) : (
+                      <>
+                        <RoleIconInline role={roleFilter} />
+                        <span className="text-gray-700">{roleFilter}</span>
+                      </>
+                    )}
+                    <svg className="w-4 h-4 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem onClick={() => setRoleFilter('all')} className={roleFilter === 'all' ? 'bg-gray-100' : ''}>
+                    <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    All Roles
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {['Overwatch', 'Admin', 'Operator', 'Viewer'].map(role => (
+                    <DropdownMenuItem key={role} onClick={() => setRoleFilter(role)} className={roleFilter === role ? 'bg-gray-100' : ''}>
+                      <RoleIconInline role={role} />
+                      <span className="ml-2">{role}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B9E9E]/20 focus:border-[#1B9E9E] bg-white"
-              >
-                <option value="all">All Statuses</option>
-                <option value="Active">Active</option>
-                <option value="Pending">Pending</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Suspended">Suspended</option>
-              </select>
+              {/* Status Filter Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1B9E9E]/20 focus:border-[#1B9E9E] bg-white flex items-center gap-2 min-w-[160px]">
+                    {statusFilter === 'all' ? (
+                      <>
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                        <span className="text-gray-700">All Statuses</span>
+                      </>
+                    ) : (
+                      <>
+                        <StatusIconInline status={statusFilter} />
+                        <span className="text-gray-700">{statusFilter}</span>
+                      </>
+                    )}
+                    <svg className="w-4 h-4 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem onClick={() => setStatusFilter('all')} className={statusFilter === 'all' ? 'bg-gray-100' : ''}>
+                    <svg className="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
+                    All Statuses
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {['Active', 'Pending', 'Inactive', 'Suspended'].map(status => (
+                    <DropdownMenuItem key={status} onClick={() => setStatusFilter(status)} className={statusFilter === status ? 'bg-gray-100' : ''}>
+                      <StatusIconInline status={status} />
+                      <span className="ml-2">{status}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             <div className="flex gap-3">
