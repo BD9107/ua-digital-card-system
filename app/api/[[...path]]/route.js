@@ -253,6 +253,13 @@ export async function GET(request) {
     // Protected routes - require authentication
     const authResult = await authMiddleware(request)
     if (authResult.error) {
+      // Special handling for suspended/inactive accounts
+      if (authResult.suspended || authResult.inactive) {
+        return NextResponse.json({ 
+          error: authResult.error,
+          blocked: authResult.suspended ? 'suspended' : 'inactive'
+        }, { status: 403 })
+      }
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
     const { supabase } = authResult
