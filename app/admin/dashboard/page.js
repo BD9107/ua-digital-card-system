@@ -131,6 +131,8 @@ export default function AdminDashboard() {
     if (supabaseRef.current) {
       await supabaseRef.current.auth.signOut()
     }
+    // Clear the session activity cookie
+    document.cookie = 'ua_last_activity=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT'
     router.push('/')
   }
 
