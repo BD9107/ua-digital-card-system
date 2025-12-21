@@ -1,7 +1,9 @@
 const nextConfig = {
   output: 'standalone',
   images: {
-    unoptimized: true,
+    // Removed unoptimized: true
+    // Using Next.js optimization now
+    domains: ['urntwznaqnaxofylqnfa.supabase.co'],
   },
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -9,15 +11,13 @@ const nextConfig = {
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
   },
   experimental: {
-    // Remove if not using Server Components
     serverComponentsExternalPackages: ['mongodb'],
   },
   webpack(config, { dev }) {
     if (dev) {
-      // Reduce CPU/memory from file watching
       config.watchOptions = {
-        poll: 2000, // check every 2 seconds
-        aggregateTimeout: 300, // wait before rebuilding
+        poll: 2000,
+        aggregateTimeout: 300,
         ignored: ['**/node_modules'],
       };
     }
@@ -28,15 +28,32 @@ const nextConfig = {
     pagesBufferLength: 2,
   },
   async headers() {
+    const allowedOrigins = process.env.ALLOWED_ORIGINS || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    
     return [
       {
         source: "/(.*)",
         headers: [
-          { key: "X-Frame-Options", value: "ALLOWALL" },
-          { key: "Content-Security-Policy", value: "frame-ancestors *;" },
-          { key: "Access-Control-Allow-Origin", value: process.env.CORS_ORIGINS || "*" },
+          // Prevent clickjacking
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          
+          // Control embedding
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self';" },
+          
+          // CORS - only allow your domain
+          { key: "Access-Control-Allow-Origin", value: allowedOrigins },
           { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "*" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
+          { key: "Access-Control-Allow-Credentials", value: "true" },
+          
+          // Prevent MIME sniffing
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          
+          // XSS protection
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          
+          // Referrer policy
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
         ],
       },
     ];

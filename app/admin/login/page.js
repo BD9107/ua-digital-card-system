@@ -9,6 +9,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [loginAttempts, setLoginAttempts] = useState(0)
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [blockTimeRemaining, setBlockTimeRemaining] = useState(0)
   const router = useRouter()
   const supabase = createClient()
 
@@ -22,27 +25,65 @@ export default function LoginPage() {
     checkAuth()
   }, [])
 
-  const handleLogin = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      if (error) throw error
-
-      router.push('/admin/dashboard')
-      router.refresh()
-    } catch (error) {
-      setError(error.message)
-    } finally {
-      setLoading(false)
-    }
+const handleLogin = async (e) => {
+  e.preventDefault()
+  
+  // Check if user is blocked
+  if (isBlocked) {
+    setError(`Too many failed attempts. Please wait ${blockTimeRemaining} seconds.`)
+    return
   }
+  
+  setLoading(true)
+  setError(null)
+
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (error) {
+      // Count failed attempts
+      const newAttempts = loginAttempts + 1
+      setLoginAttempts(newAttempts)
+      
+      // Block after 5 failed attempts
+      if (newAttempts >= 5) {
+        setIsBlocked(true)
+        setBlockTimeRemaining(300) // 5 minutes
+        
+        // Countdown timer
+        const interval = setInterval(() => {
+          setBlockTimeRemaining(prev => {
+            if (prev <= 1) {
+              clearInterval(interval)
+              setIsBlocked(false)
+              setLoginAttempts(0)
+              return 0
+            }
+            return prev - 1
+          })
+        }, 1000)
+        
+        setError('Too many failed attempts. Account locked for 5 minutes.')
+      } else {
+        setError(`${error.message}. ${5 - newAttempts} attempts remaining.`)
+      }
+      
+      throw error
+    }
+
+    // Success - reset counter
+    setLoginAttempts(0)
+    router.push('/admin/dashboard')
+    router.refresh()
+  } catch (error) {
+    // Error already set above
+  } finally {
+    setLoading(false)
+  }
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#003366] to-[#004488] flex items-center justify-center px-4">

@@ -31,7 +31,7 @@ export default function AdminDashboard() {
         setLoading(false)
         fetchEmployees(supabaseClient)
       } catch (error) {
-        console.error('Error initializing:', error)
+        //console.error('Error initializing:', error)
         setLoading(false)
       }
     }
@@ -70,7 +70,7 @@ export default function AdminDashboard() {
       const data = await response.json()
       setEmployees(data)
     } catch (error) {
-      console.error('Error fetching employees:', error)
+      //console.error('Error fetching employees:', error)
     }
   }
 
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
       })
       fetchEmployees(supabase)
     } catch (error) {
-      console.error('Error deleting employee:', error)
+      //console.error('Error deleting employee:', error)
     }
   }
 
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
       })
       fetchEmployees(supabase)
     } catch (error) {
-      console.error('Error updating employee:', error)
+      //console.error('Error updating employee:', error)
     }
   }
 

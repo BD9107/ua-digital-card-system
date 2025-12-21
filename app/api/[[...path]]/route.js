@@ -1,3 +1,5 @@
+import { validateEmployee, sanitizeUrl } from '@/lib/validation'
+import rateLimiter from '@/lib/rate-limiter'
 import { NextResponse } from 'next/server'
 import { createSupabaseServer } from '@/lib/supabase-server'
 import QRCode from 'qrcode'
@@ -31,11 +33,11 @@ async function authMiddleware(request) {
       const { data: { user }, error } = await supabase.auth.getUser(token)
       
       if (error || !user) {
-        console.error('Token verification failed:', error)
+        //console.error('Token verification failed:', error)
         return { error: 'Unauthorized - Invalid token', status: 401 }
       }
       
-      console.log('Auth successful via token for user:', user.email)
+      //console.log('Auth successful via token for user:', user.email)
       return { supabase, user }
     }
     
@@ -46,12 +48,12 @@ async function authMiddleware(request) {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     
     if (sessionError) {
-      console.error('Session error:', sessionError)
+      //console.error('Session error:', sessionError)
       return { error: 'Unauthorized - Session error', status: 401 }
     }
     
     if (!session) {
-      console.error('No session found')
+      //console.error('No session found')
       return { error: 'Unauthorized - No session', status: 401 }
     }
     
@@ -59,26 +61,33 @@ async function authMiddleware(request) {
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     if (userError) {
-      console.error('User error:', userError)
+      //console.error('User error:', userError)
       return { error: 'Unauthorized - User error', status: 401 }
     }
     
     if (!user) {
-      console.error('No user found')
+      //console.error('No user found')
       return { error: 'Unauthorized - No user', status: 401 }
     }
     
-    console.log('Auth successful via session for user:', user.email)
+    //console.log('Auth successful via session for user:', user.email)
     return { supabase, user }
   } catch (error) {
-    console.error('Auth middleware error:', error)
+    //console.error('Auth middleware error:', error)
     return { error: 'Unauthorized - Exception', status: 401 }
   }
 }
 
-// Helper to generate slug from name
+// Helper to generate unique slug from name
 function generateSlug(firstName, lastName) {
-  return `${firstName}-${lastName}`.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-')
+  const baseSlug = `${firstName}-${lastName}`.toLowerCase()
+    .replace(/[^a-z0-9-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') // Remove leading/trailing dashes
+  
+  // Add random suffix to ensure uniqueness
+  const randomSuffix = Math.random().toString(36).substring(2, 7)
+  return `${baseSlug}-${randomSuffix}`
 }
 
 // GET handler
@@ -131,7 +140,7 @@ export async function GET(request) {
         .single()
       
       if (error || !employee) {
-        console.error('Error fetching employee:', error)
+        //console.error('Error fetching employee:', error)
         return NextResponse.json({ error: 'Employee not found' }, { status: 404 })
       }
       
@@ -144,10 +153,10 @@ export async function GET(request) {
         .order('sort_order', { ascending: true })
       
       if (linksError) {
-        console.error('Error fetching public links:', linksError)
+       // console.error('Error fetching public links:', linksError)
       }
       
-      console.log(`Public profile for ${id}: Found ${links?.length || 0} professional links`)
+      //console.log(`Public profile for ${id}: Found ${links?.length || 0} professional links`)
       
       return NextResponse.json({
         ...employee,
@@ -241,7 +250,7 @@ export async function GET(request) {
         .order('sort_order', { ascending: true })
       
       if (linksError) {
-        console.error('Error fetching links:', linksError)
+        //console.error('Error fetching links:', linksError)
       }
       
       return NextResponse.json({
@@ -253,7 +262,7 @@ export async function GET(request) {
     return NextResponse.json({ message: 'API is running' })
     
   } catch (error) {
-    console.error('API Error:', error)
+   // console.error('API Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
@@ -272,17 +281,32 @@ export async function POST(request) {
       const supabase = await createSupabaseServer()
       
       if (action === 'signin') {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-        
-        if (error) {
-          return NextResponse.json({ error: error.message }, { status: 401 })
-        }
-        
-        return NextResponse.json({ user: data.user, session: data.session })
+  // Add rate limiting
+  const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+  const rateLimit = rateLimiter.check(`login:${clientIp}`, 5, 15 * 60 * 1000)
+  
+  if (!rateLimit.allowed) {
+    return NextResponse.json({ 
+      error: `Too many login attempts. Please try again in ${rateLimit.retryAfter} seconds.` 
+    }, { 
+      status: 429,
+      headers: {
+        'Retry-After': rateLimit.retryAfter.toString()
       }
+    })
+  }
+  
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+  
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 401 })
+  }
+  
+  return NextResponse.json({ user: data.user, session: data.session })
+}
       
       if (action === 'signout') {
         const { error } = await supabase.auth.signOut()
@@ -310,6 +334,20 @@ export async function POST(request) {
       
       // Extract professional_links if provided
       const { professional_links, ...employeeData } = body
+      
+      // Validate the data
+const validation = validateEmployee(employeeData)
+if (!validation.success) {
+  return NextResponse.json({ 
+    error: 'Validation failed', 
+    details: validation.errors 
+  }, { status: 400 })
+}
+
+// Clean up URLs
+if (employeeData.website) {
+  employeeData.website = sanitizeUrl(employeeData.website)
+}
       
       // Generate unique ID and slug
       const employeeId = `emp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -345,7 +383,7 @@ export async function POST(request) {
           .insert(linksToInsert)
         
         if (linksError) {
-          console.error('Error creating links:', linksError)
+         // console.error('Error creating links:', linksError)
         }
       }
       
@@ -443,7 +481,7 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
     
   } catch (error) {
-    console.error('API Error:', error)
+   // console.error('API Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
@@ -517,7 +555,7 @@ export async function PUT(request) {
             .insert(linksToInsert)
           
           if (linksError) {
-            console.error('Error updating links:', linksError)
+           // console.error('Error updating links:', linksError)
             return NextResponse.json({ 
               error: 'Employee updated but links failed: ' + linksError.message 
             }, { status: 500 })
@@ -531,7 +569,7 @@ export async function PUT(request) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
     
   } catch (error) {
-    console.error('API Error:', error)
+   // console.error('API Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
@@ -566,7 +604,7 @@ export async function DELETE(request) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
     
   } catch (error) {
-    console.error('API Error:', error)
+   // console.error('API Error:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

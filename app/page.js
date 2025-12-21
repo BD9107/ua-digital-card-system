@@ -21,7 +21,7 @@ export default function HomePage() {
           setLoading(false)
         }
       } catch (error) {
-        console.error('Error initializing Supabase:', error)
+        //console.error('Error initializing Supabase:', error)
         setLoading(false)
       }
     }
